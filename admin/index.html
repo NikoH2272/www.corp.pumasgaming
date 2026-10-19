@@ -439,35 +439,42 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
               <!-- RESULTADOS -->
               <div class="tab-panel" id="trn-tab-resultados" style="padding:1.1rem">
-                <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.8rem">
-                  <div class="fg" style="flex:1;min-width:140px">
-                    <label>Partida</label>
-                    <select id="res-partida" onchange="trn.selResPartida()">
-                      <option value="">— Selecciona —</option>
-                    </select>
-                  </div>
-                  <div class="fg" style="flex:1;min-width:140px">
-                    <label>Tipo de sala</label>
-                    <select id="res-tipo" onchange="trn.renderResForm()">
-                      <option value="normal">Sala Normal (12 eq.)</option>
-                      <option value="liga">Sala de Liga (15 eq.)</option>
-                    </select>
-                  </div>
+                <!-- Fases -->
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--ln)">
+                  <div id="res-fase-tabs" style="display:flex;gap:4px;flex-wrap:wrap;flex:1;min-width:0"></div>
+                  <button type="button" class="btn btn-s btn-sm" onclick="trn.addFase()" style="white-space:nowrap;font-size:.72rem">
+                    <i class="fa-solid fa-plus"></i> Fase
+                  </button>
                 </div>
-                <div id="res-form-wrap" style="display:none">
-                  <div id="res-eq-tabla"></div>
-                  <div style="display:flex;gap:8px;margin-top:.8rem">
-                    <button type="button" class="btn btn-s" onclick="trn.guardarResultados()">
-                      <i class="fa-solid fa-floppy-disk"></i> Guardar resultados
-                    </button>
-                  </div>
-                  <div class="st" id="st-res"></div>
+                <!-- Toolbar -->
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:.8rem">
+                  <button type="button" class="btn btn-s btn-sm" onclick="trn.addGrupoRes()">
+                    <i class="fa-solid fa-plus"></i> Nuevo grupo
+                  </button>
+                  <button type="button" class="btn btn-s btn-sm" onclick="trn.toggleResGeneral()">
+                    <i class="fa-solid fa-ranking-star"></i> Tabla general
+                  </button>
+                  <button type="button" class="btn btn-g btn-sm" onclick="trn.guardarResData()">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                  </button>
+                  <div class="st" id="st-res" style="flex:1;min-width:0;margin:0"></div>
                 </div>
-                <!-- Tabla general de posiciones -->
-                <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin:1.2rem 0 .5rem;border-top:1px solid var(--ln);padding-top:.8rem">
-                  Tabla general
-                </div>
-                <div id="res-tabla"><div style="color:var(--gray);font-size:.8rem;padding:.3rem">—</div></div>
+                <!-- Carga masiva -->
+                <details style="border:1px solid rgba(216,195,149,.2);border-radius:6px;padding:.7rem;margin-bottom:.8rem">
+                  <summary style="cursor:pointer;font-family:'Michroma',sans-serif;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ga)">
+                    <i class="fa-solid fa-file-import"></i> Carga masiva
+                  </summary>
+                  <p style="font-size:.8rem;color:var(--gray);margin:.5rem 0 .4rem">Pega grupos de la fase activa. Cada bloque: nombre del grupo, luego lista numerada.</p>
+                  <textarea id="res-bulk" rows="7" placeholder="GRUPO A&#10;1. OLIS&#10;2. B17 E-SPORT&#10;3. SIX NOVA&#10;…&#10;&#10;GRUPO B&#10;1. ZINNER&#10;2. XPECTER BLUE&#10;…" style="resize:vertical"></textarea>
+                  <button type="button" class="btn btn-s btn-sm" onclick="trn.resBulkLoad()" style="margin-top:6px">
+                    <i class="fa-solid fa-layer-group"></i> Cargar equipos
+                  </button>
+                  <div class="st" id="st-res-bulk"></div>
+                </details>
+                <!-- Tabla general panel -->
+                <div id="res-general-panel" style="display:none;margin-bottom:1rem"></div>
+                <!-- Grupos de la fase activa -->
+                <div id="res-grupos-list"></div>
               </div>
 
               <!-- LOGS -->
@@ -1139,102 +1146,214 @@ const trn = (function(){
     catch(e){alert('Error: '+(e.message||''));}
   }
 
-  // ── Resultados ──────────────────────────────────────────────────────────
-  const PTS_POS = [0, 12, 9, 7, 5, 4, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1];
-  const FASE_L  = {grupos:'Grupos',cuartos:'Cuartos',semis:'Semis',final:'Final',gran_final:'Gran Final'};
-  let resEqs=[], resPid=null;
+  // ── Resultados DFS-style ─────────────────────────────────────────────────
+  let resData = { fases:[], grupos:[] };
+  let curFase = null;
+  let resShowGeneral = false;
 
-  function calcPts(puesto, kills) {
-    return (PTS_POS[parseInt(puesto)||0]||1) + (parseInt(kills)||0);
+  function _uuid(){ return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+Date.now().toString(36); }
+  function _total(f){ return (parseInt(f.kills)||0)+(parseInt(f.pp)||0)-(parseInt(f.sancion)||0); }
+  function _sortFilas(filas){ return [...filas].sort((a,b)=>_total(b)-_total(a)||(b.pp||0)-(a.pp||0)||(b.kills||0)-(a.kills||0)); }
+
+  function cargarResultados(){
+    const raw=actual?.config?.resultados;
+    resData=raw?JSON.parse(JSON.stringify(raw)):{fases:[],grupos:[]};
+    if(!Array.isArray(resData.fases)) resData.fases=[];
+    if(!Array.isArray(resData.grupos)) resData.grupos=[];
+    if(!resData.fases.length) resData.fases=['Clasificatorias'];
+    if(!resData.fases.includes(curFase)) curFase=resData.fases[0];
+    resShowGeneral=false;
+    renderRes();
   }
 
-  async function cargarResultados(){
-    if(!partidas.length) await cargarPartidas();
-    const sel=$('res-partida');
-    const prev=sel.value;
-    sel.innerHTML='<option value="">— Selecciona —</option>'+
-      partidas.map(p=>`<option value="${p.id}">R${p.ronda} S${p.sala||'?'} · ${FASE_L[p.fase]||p.fase}</option>`).join('');
-    if(prev) sel.value=prev;
-    await renderTablaPos();
+  function renderRes(){
+    const Q=s=>s.replace(/'/g,"\\'");
+    $('res-fase-tabs').innerHTML=resData.fases.map(f=>
+      `<button type="button" class="btn btn-sm ${f===curFase?'btn-g':'btn-s'}" onclick="trn.selFase('${Q(f)}')" style="font-size:.75rem;padding:.3rem .8rem">${esc(f)}${resData.fases.length>1?` <span onclick="event.stopPropagation();trn.delFase('${Q(f)}')" style="opacity:.5;margin-left:4px;cursor:pointer;font-size:1rem">×</span>`:''}</button>`
+    ).join('');
+    renderGruposRes();
+    if(resShowGeneral) renderGeneralRes();
+    else $('res-general-panel').style.display='none';
   }
 
-  async function selResPartida(){
-    const pid=parseInt($('res-partida').value);
-    resPid=pid||null;
-    if(!pid){$('res-form-wrap').style.display='none';return;}
-    try{ resEqs=await P.torneos.adminEquipos(PORTAL,actual.id); }catch{ resEqs=[]; }
-    renderResForm();
-    $('res-form-wrap').style.display='';
+  function renderGruposRes(){
+    const grupos=resData.grupos.filter(g=>g.fase===curFase);
+    $('res-grupos-list').innerHTML=grupos.length
+      ?grupos.map(g=>renderGrupoResHTML(g)).join('')
+      :`<div style="color:var(--gray);font-size:.85rem;text-align:center;padding:2rem 1rem">Sin grupos en "${esc(curFase)}" — usa "+ Nuevo grupo"</div>`;
   }
 
-  function renderResForm(){
-    if(!resPid)return;
-    const tipo=$('res-tipo').value;
-    const max=tipo==='liga'?15:12;
-    const rows=Array.from({length:max},(_,i)=>{
-      const pos=i+1;
-      return `<tr>
-        <td style="color:var(--ga);font-weight:700;width:36px">${pos}</td>
-        <td><select class="res-eq-sel" style="width:100%" onchange="trn.updResRow(${i})">
-          <option value="">— Equipo —</option>
-          ${resEqs.map(eq=>`<option value="${eq.id}">${esc(eq.nombre)}</option>`).join('')}
-        </select></td>
-        <td style="width:80px"><input type="number" class="res-kills" min="0" value="0" style="width:70px" oninput="trn.updResRow(${i})"></td>
-        <td style="width:60px;text-align:right;color:var(--g);font-weight:700" id="res-pts-${i}">${PTS_POS[pos]||1}</td>
-      </tr>`;
+  function renderGrupoResHTML(g){
+    const filas=Array.isArray(g.filas)?g.filas:[];
+    const clasifican=parseInt(g.clasifican)||0;
+    const cls=new Set(_sortFilas(filas.filter(f=>f.equipo?.trim())).slice(0,clasifican).map(f=>f.id));
+    const Q=s=>String(s).replace(/'/g,"\\'");
+    return `<div style="border:1px solid var(--ln);border-radius:8px;margin-bottom:.8rem">
+      <div style="display:flex;gap:8px;align-items:center;padding:.65rem .9rem;border-bottom:1px solid var(--ln);flex-wrap:wrap">
+        <input value="${esc(g.titulo)}" placeholder="Nombre" style="flex:1;min-width:100px;background:transparent;border:none;border-bottom:1px solid var(--ln);color:var(--tx);font-family:'Michroma',sans-serif;font-size:.78rem;padding:2px 4px;outline:none"
+          onchange="trn.updGrupoRes('${g.id}','titulo',this.value)">
+        <label style="font-size:.78rem;color:var(--gray);display:flex;align-items:center;gap:4px;white-space:nowrap">Clasifican
+          <input type="number" min="0" value="${clasifican}" style="width:44px;text-align:center;font-size:.78rem"
+            onchange="trn.updGrupoRes('${g.id}','clasifican',this.value);trn.refreshGrupoRes('${g.id}')"></label>
+        <button type="button" class="btn btn-s btn-sm" onclick="trn.addFilaRes('${g.id}')" style="font-size:.7rem;padding:.2rem .5rem">+ Fila</button>
+        <button type="button" onclick="trn.delGrupoResConf('${g.id}')" style="background:none;border:none;cursor:pointer;color:var(--err);padding:4px" title="Eliminar grupo"><i class="fa-solid fa-trash-can" style="font-size:.85rem"></i></button>
+      </div>
+      <div class="tbl-wrap" style="padding:.5rem .9rem .7rem">
+        <table class="tbl" style="font-size:.8rem" id="gtbl-${g.id}">
+          <thead><tr><th>Equipo</th><th style="text-align:right;width:56px">Kills</th><th style="text-align:right;width:56px">P.P</th><th style="text-align:right;width:56px">Sanc.</th><th style="text-align:right;width:60px">Total</th><th style="width:24px"></th></tr></thead>
+          <tbody>${filas.map((f,fi)=>`<tr id="fila-${f.id}" ${cls.has(f.id)?'style="background:rgba(216,195,149,.08)"':''}>
+            <td><input value="${esc(f.equipo||'')}" placeholder="Equipo ${fi+1}" style="width:100%;background:transparent;border:none;color:var(--tx);font-size:.8rem"
+              onchange="trn.updFilaRes('${g.id}','${f.id}','equipo',this.value)"></td>
+            <td><input type="number" min="0" value="${f.kills||0}" style="width:50px;text-align:right;font-size:.8rem" oninput="trn.updFilaRes('${g.id}','${f.id}','kills',this.value)"></td>
+            <td><input type="number" min="0" value="${f.pp||0}" style="width:50px;text-align:right;font-size:.8rem" oninput="trn.updFilaRes('${g.id}','${f.id}','pp',this.value)"></td>
+            <td><input type="number" min="0" value="${f.sancion||0}" style="width:50px;text-align:right;font-size:.8rem" oninput="trn.updFilaRes('${g.id}','${f.id}','sancion',this.value)"></td>
+            <td style="text-align:right;color:var(--g);font-weight:700" id="restot-${f.id}">${_total(f)}</td>
+            <td><button type="button" onclick="trn.delFilaRes('${Q(g.id)}','${f.id}')" style="background:none;border:none;cursor:pointer;color:var(--err);font-size:.85rem">×</button></td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  function renderGeneralRes(){
+    const grupos=resData.grupos.filter(g=>g.fase===curFase);
+    const entries=[];
+    grupos.forEach(g=>{(g.filas||[]).filter(f=>f.equipo?.trim()).forEach(f=>{
+      entries.push({equipo:f.equipo,grupo:g.titulo,kills:parseInt(f.kills)||0,pp:parseInt(f.pp)||0,sancion:parseInt(f.sancion)||0});
+    });});
+    if(!entries.length){
+      $('res-general-panel').innerHTML=`<div style="border:1px solid var(--ln);border-radius:8px;padding:1rem;color:var(--gray);font-size:.85rem">Sin datos en "${esc(curFase)}"</div>`;
+      $('res-general-panel').style.display='';
+      return;
+    }
+    const nc={};entries.forEach(e=>{const k=e.equipo.toLowerCase();nc[k]=(nc[k]||0)+1;});
+    const sorted=[...entries].map(e=>({...e,total:e.kills+e.pp-e.sancion,dup:nc[e.equipo.toLowerCase()]>1}))
+      .sort((a,b)=>b.total-a.total||b.pp-a.pp||b.kills-a.kills);
+    $('res-general-panel').innerHTML=`<div style="border:1px solid var(--ln);border-radius:8px;margin-bottom:.8rem">
+      <div style="padding:.6rem .9rem;border-bottom:1px solid var(--ln);font-family:'Michroma',sans-serif;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ga);display:flex;justify-content:space-between;align-items:center">
+        Tabla general · ${esc(curFase)}
+        <button type="button" onclick="trn.toggleResGeneral()" style="background:none;border:none;cursor:pointer;color:var(--gray)">×</button>
+      </div>
+      <div class="tbl-wrap" style="padding:.5rem .9rem .7rem">
+        <table class="tbl" style="font-size:.8rem">
+          <thead><tr><th>#</th><th>Equipo</th><th>Grupo</th><th style="text-align:right">Kills</th><th style="text-align:right">P.P</th><th style="text-align:right">Total</th></tr></thead>
+          <tbody>${sorted.map((f,i)=>`<tr>
+            <td style="${i<3?'color:var(--g);font-weight:700;font-family:Michroma,sans-serif':'color:var(--gray)'}">${i+1}</td>
+            <td style="font-weight:600">${esc(f.equipo)}${f.dup?` <span style="font-size:.7rem;color:var(--gray)">(${esc(f.grupo)})</span>`:''}</td>
+            <td style="color:var(--gray);font-size:.75rem">${esc(f.grupo)}</td>
+            <td style="text-align:right;color:var(--gray)">${f.kills}</td>
+            <td style="text-align:right;color:var(--gray)">${f.pp}</td>
+            <td style="text-align:right;color:var(--g);font-weight:700">${f.total}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+    $('res-general-panel').style.display='';
+  }
+
+  function selFase(f){ curFase=f; resShowGeneral=false; renderRes(); }
+
+  function addFase(){
+    const nombre=prompt('Nombre de la nueva fase:');
+    if(!nombre?.trim())return;
+    if(resData.fases.includes(nombre.trim())){st('st-res','err','La fase ya existe');return;}
+    resData.fases.push(nombre.trim()); curFase=nombre.trim(); renderRes();
+  }
+
+  function delFase(f){
+    if(!confirm(`¿Eliminar la fase "${f}" y todos sus grupos?`))return;
+    resData.fases=resData.fases.filter(x=>x!==f);
+    resData.grupos=resData.grupos.filter(g=>g.fase!==f);
+    if(!resData.fases.length) resData.fases=['Clasificatorias'];
+    curFase=resData.fases[0]; renderRes();
+  }
+
+  function addGrupoRes(){
+    const letra='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[resData.grupos.filter(g=>g.fase===curFase).length]||'?';
+    resData.grupos.push({id:_uuid(),fase:curFase,titulo:`Grupo ${letra}`,clasifican:0,filas:[]});
+    renderRes();
+  }
+
+  function delGrupoResConf(gid){
+    const g=resData.grupos.find(x=>x.id===gid);
+    if(!confirm(`¿Eliminar "${g?.titulo||'grupo'}"?`))return;
+    resData.grupos=resData.grupos.filter(x=>x.id!==gid); renderRes();
+  }
+
+  function updGrupoRes(gid,key,val){
+    const g=resData.grupos.find(x=>x.id===gid);if(!g)return;
+    g[key]=key==='clasifican'?parseInt(val)||0:val;
+  }
+
+  function refreshGrupoRes(gid){
+    const g=resData.grupos.find(x=>x.id===gid);if(!g)return;
+    const clasifican=parseInt(g.clasifican)||0;
+    const cls=new Set(_sortFilas((g.filas||[]).filter(f=>f.equipo?.trim())).slice(0,clasifican).map(f=>f.id));
+    (g.filas||[]).forEach(f=>{
+      const tr=document.getElementById(`fila-${f.id}`);
+      if(tr) tr.style.background=cls.has(f.id)?'rgba(216,195,149,.08)':'';
     });
-    $('res-eq-tabla').innerHTML=`<div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>#</th><th>Equipo</th><th>Kills</th><th style="text-align:right">Pts</th></tr></thead>
-      <tbody>${rows.join('')}</tbody>
-    </table></div>`;
   }
 
-  function updResRow(i){
-    const trs=$('res-eq-tabla').querySelectorAll('tbody tr');
-    if(!trs[i])return;
-    const kills=trs[i].querySelector('.res-kills')?.value||0;
-    const el=$(`res-pts-${i}`);
-    if(el) el.textContent=calcPts(i+1,kills);
+  function addFilaRes(gid){
+    const g=resData.grupos.find(x=>x.id===gid);if(!g)return;
+    if(!g.filas) g.filas=[];
+    g.filas.push({id:_uuid(),equipo:'',kills:0,pp:0,sancion:0}); renderRes();
   }
 
-  async function guardarResultados(){
-    if(!resPid)return;
-    const trs=$('res-eq-tabla').querySelectorAll('tbody tr');
-    const resultados=[];
-    trs.forEach((tr,i)=>{
-      const sel=tr.querySelector('.res-eq-sel');
-      const kills=parseInt(tr.querySelector('.res-kills')?.value)||0;
-      if(sel?.value){
-        const eq=resEqs.find(e=>e.id==sel.value);
-        resultados.push({equipo_id:parseInt(sel.value),nombre:eq?.nombre||'',puesto:i+1,kills,puntos:calcPts(i+1,kills)});
-      }
-    });
-    if(!resultados.length){st('st-res','err','Ingresa al menos un equipo');return;}
+  function delFilaRes(gid,fid){
+    const g=resData.grupos.find(x=>x.id===gid);if(!g)return;
+    g.filas=(g.filas||[]).filter(x=>x.id!==fid); renderRes();
+  }
+
+  function updFilaRes(gid,fid,key,val){
+    const g=resData.grupos.find(x=>x.id===gid);if(!g)return;
+    const f=(g.filas||[]).find(x=>x.id===fid);if(!f)return;
+    if(key==='equipo') f.equipo=val; else f[key]=parseInt(val)||0;
+    const cell=document.getElementById(`restot-${fid}`);
+    if(cell) cell.textContent=_total(f);
+  }
+
+  function toggleResGeneral(){ resShowGeneral=!resShowGeneral; if(resShowGeneral) renderGeneralRes(); else $('res-general-panel').style.display='none'; }
+
+  function resBulkLoad(){
+    const txt=$('res-bulk').value.trim();
+    if(!txt){st('st-res-bulk','err','Pega la lista');return;}
+    const blocks=txt.split(/\n\s*\n/).filter(Boolean);
+    let added=0;
+    for(const block of blocks){
+      const lines=block.trim().split('\n').map(l=>l.trim()).filter(Boolean);
+      if(!lines.length) continue;
+      const titulo=lines[0].replace(/^[\d.)\-]+\s*/,'').trim()||'Grupo';
+      const equipos=lines.slice(1).map(l=>l.replace(/^[\d.)\-]+\s*/,'').trim()).filter(Boolean);
+      if(!equipos.length) continue;
+      let g=resData.grupos.find(x=>x.fase===curFase&&x.titulo.toLowerCase()===titulo.toLowerCase());
+      if(!g){g={id:_uuid(),fase:curFase,titulo,clasifican:0,filas:[]};resData.grupos.push(g);}
+      equipos.forEach((nombre,i)=>{
+        if(g.filas[i]) g.filas[i].equipo=nombre;
+        else g.filas.push({id:_uuid(),equipo:nombre,kills:0,pp:0,sancion:0});
+      });
+      added+=equipos.length;
+    }
+    renderRes();
+    st('st-res-bulk','ok',`${added} equipos cargados`);
+  }
+
+  async function guardarResData(){
+    if(!actual)return;
     st('st-res','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
     try{
-      await P.torneos.adminResultado(PORTAL,actual.id,resPid,resultados);
-      st('st-res','ok',`${resultados.length} resultados guardados`);
-      await renderTablaPos();
-    }catch(e){ st('st-res','err',e.message||'Error'); }
-  }
-
-  async function renderTablaPos(){
-    try{
-      const data=await P.torneos.tabla(actual.id);
-      const tabla=Array.isArray(data)?data:[];
-      $('res-tabla').innerHTML=!tabla.length
-        ?'<div style="color:var(--gray);font-size:.8rem;padding:.3rem">Sin resultados registrados aún</div>'
-        :`<div class="tbl-wrap"><table class="tbl">
-          <thead><tr><th>#</th><th>Equipo</th><th style="text-align:right">Kills</th><th style="text-align:right">PJ</th><th style="text-align:right">Pts</th></tr></thead>
-          <tbody>${tabla.map((f,i)=>`<tr>
-            <td style="${i<3?'color:var(--g);font-weight:700;font-family:Michroma,sans-serif':''}">${i+1}</td>
-            <td>${esc(f.nombre)}</td>
-            <td style="text-align:right;color:var(--gray)">${f.kills_total||0}</td>
-            <td style="text-align:right;color:var(--gray)">${f.partidas||0}</td>
-            <td style="text-align:right;color:var(--g);font-weight:700">${f.puntos_total||0}</td>
-          </tr>`).join('')}</tbody>
-        </table></div>`;
-    }catch{ $('res-tabla').innerHTML='<div style="color:var(--err);font-size:.8rem">Error cargando tabla</div>'; }
+      if(!actual.config) actual.config={};
+      actual.config.resultados=resData;
+      await P.torneos.adminGuardar(PORTAL,{
+        id:actual.id,nombre:actual.nombre,juego:actual.juego||'free_fire',
+        estado:actual.estado||'borrador',descripcion:actual.descripcion,
+        logoUrl:actual.logo_url,bannerUrl:actual.banner_url,
+        publico:actual.publico,config:actual.config,colores:actual.colores
+      });
+      await cargar();actual=lista.find(t=>t.id===actual.id);
+      st('st-res','ok','Guardado');
+    }catch(e){st('st-res','err',e.message||'Error');}
   }
 
   async function cargarPartidas(){
@@ -1392,27 +1511,31 @@ const trn = (function(){
     }
     await cargarEquipos();
     const resumen=grupos.map(g=>`Grupo ${g.letra}: ${g.teams.length} eq.`).join(' · ');
-    st('st-eq-bulk',errors?'err':'ok',`${saved} equipos guardados · ${resumen}${errors?` · ${errors} errores`:''}`);
     if(!errors){
       $('eq-bulk').value='';
-      // Proponer cronograma: poblar automáticamente y abrir tab Info
       cronograma=grupos.map(g=>({grupo:`Grupo ${g.letra}`,fecha:null}));
-      tabById('info');
-      renderCronograma();
-      const cronWrap=$('t-cronograma');
-      if(cronWrap) cronWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
-      // Notificar al usuario
-      setTimeout(()=>st('st-trn-info','ok',`Grupos creados — agrega las fechas del cronograma abajo`),100);
+      const resumen=grupos.map(g=>`Grupo ${g.letra}: ${g.teams.length} eq.`).join(' · ');
+      $('st-eq-bulk').innerHTML=`<span class="ok">${saved} equipos guardados · ${resumen}</span>
+        <button type="button" class="btn btn-s btn-sm" onclick="trn.irCronograma()" style="margin-left:.5rem;font-size:.7rem">
+          <i class="fa-solid fa-calendar-days"></i> Configurar cronograma
+        </button>`;
+    } else {
+      st('st-eq-bulk','err',`${saved} guardados, ${errors} errores`);
     }
+  }
+  function irCronograma(){
+    tabById('info'); renderCronograma();
+    setTimeout(()=>{const el=$('t-cronograma');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},150);
   }
 
   return {cargar,select,nuevo,cancelarQuick,quickCreate,borrar,guardar,tab,togglePago,
     editarEq,resetEq,guardarEq,borrarEq,
     editarPt,resetPt,guardarPt,borrarPt,subirLog,
     addGrupo,delGrupo,updGrupo,
-    importarEquipos,
+    importarEquipos,irCronograma,
     subirReglamento,verReglamento,borrarReglamento,
-    selResPartida,renderResForm,updResRow,guardarResultados};
+    addFase,delFase,selFase,addGrupoRes,delGrupoResConf,updGrupoRes,refreshGrupoRes,
+    addFilaRes,delFilaRes,updFilaRes,toggleResGeneral,resBulkLoad,guardarResData};
 })();
 
 // ═══════════════════ RELAMPAGOS ══════════════════════════════════════

@@ -287,60 +287,94 @@ body { background: var(--bg-a); }
 
   /* ── TABLA ────────────────────────────────────────────────── */
   function renderTabla(filas) {
+    // Prefer DFS-style results from config if available
+    const rd = TORNEO?.config?.resultados;
+    if (rd?.grupos?.length) {
+      const entries = [];
+      const nameCnt = {};
+      rd.grupos.forEach(g => (g.filas||[]).filter(f=>f.equipo?.trim()).forEach(f=>{
+        const k = f.equipo.trim().toLowerCase();
+        nameCnt[k] = (nameCnt[k]||0)+1;
+        entries.push({nombre:f.equipo.trim(), grupo:g.titulo, kills:parseInt(f.kills)||0, pp:parseInt(f.pp)||0, sancion:parseInt(f.sancion)||0});
+      }));
+      const sorted = entries.map(e=>({...e, total:e.kills+e.pp-e.sancion, dup:nameCnt[e.nombre.toLowerCase()]>1}))
+        .sort((a,b)=>b.total-a.total||b.pp-a.pp||b.kills-a.kills);
+      if (!sorted.length) {
+        document.getElementById('contenido-tabla').innerHTML = '<div class="trn-vacio"><i class="fa-solid fa-ghost"></i> Sin resultados registrados aún.</div>';
+        return;
+      }
+      document.getElementById('contenido-tabla').innerHTML = `<table class="trn-tabla">
+        <thead><tr><th>#</th><th>Equipo</th><th style="text-align:right">Kills</th><th style="text-align:right">P.P</th><th style="text-align:right">Pts</th></tr></thead>
+        <tbody>${sorted.map((f,i) => `<tr>
+          <td class="trn-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</td>
+          <td><div class="trn-nombre">${esc(f.nombre)}${f.dup?` <small style="color:var(--gray);font-size:.7rem">${esc(f.grupo)}</small>`:''}</div></td>
+          <td class="trn-kills">${f.kills}</td>
+          <td style="text-align:right;color:var(--gray);font-size:.85rem">${f.pp}</td>
+          <td class="trn-pts">${f.total}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+      return;
+    }
+    // Fallback: legacy torneos_tabla RPC format
     if (!filas.length) {
       document.getElementById('contenido-tabla').innerHTML = '<div class="trn-vacio"><i class="fa-solid fa-ghost"></i> Sin resultados registrados aún.</div>';
       return;
     }
-    const html = `<table class="trn-tabla">
-      <thead><tr>
-        <th>#</th><th>Equipo</th><th style="text-align:right">Kills</th>
-        <th style="text-align:right">Partidas</th><th style="text-align:right">Puntos</th>
-      </tr></thead>
-      <tbody>
-        ${filas.map((f,i) => `<tr>
-          <td class="trn-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</td>
-          <td><div class="trn-nombre">${esc(f.nombre)}</div>${f.ig?`<div class="trn-ig">@${esc(f.ig)}</div>`:''}</td>
-          <td class="trn-kills">${f.kills_total||0}</td>
-          <td style="text-align:right;color:var(--gray);font-size:.82rem">${f.partidas||0}</td>
-          <td class="trn-pts">${f.puntos_total||0}</td>
-        </tr>`).join('')}
-      </tbody>
+    document.getElementById('contenido-tabla').innerHTML = `<table class="trn-tabla">
+      <thead><tr><th>#</th><th>Equipo</th><th style="text-align:right">Kills</th><th style="text-align:right">Partidas</th><th style="text-align:right">Puntos</th></tr></thead>
+      <tbody>${filas.map((f,i) => `<tr>
+        <td class="trn-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</td>
+        <td><div class="trn-nombre">${esc(f.nombre)}</div>${f.ig?`<div class="trn-ig">@${esc(f.ig)}</div>`:''}</td>
+        <td class="trn-kills">${f.kills_total||0}</td>
+        <td style="text-align:right;color:var(--gray);font-size:.82rem">${f.partidas||0}</td>
+        <td class="trn-pts">${f.puntos_total||0}</td>
+      </tr>`).join('')}</tbody>
     </table>`;
-    document.getElementById('contenido-tabla').innerHTML = html;
   }
 
-  /* ── RESULTADOS POR RONDA ─────────────────────────────────── */
+  /* ── helpers para resultados DFS-style ──────────────────────── */
+  const _rTotal = f => (parseInt(f.kills)||0)+(parseInt(f.pp)||0)-(parseInt(f.sancion)||0);
+  const _rSort  = arr => [...arr].sort((a,b)=>_rTotal(b)-_rTotal(a)||(b.pp||0)-(a.pp||0)||(b.kills||0)-(a.kills||0));
+
+  /* ── RESULTADOS POR FASE/GRUPO ───────────────────────────────── */
   async function cargarResultados() {
     const el = document.getElementById('contenido-resultados');
     el.dataset.cargado = '1';
-    if (!TABLA.length) {
+    const rd = TORNEO?.config?.resultados;
+    if (!rd?.grupos?.length) {
       el.innerHTML = '<div class="trn-vacio"><i class="fa-solid fa-ghost"></i> Sin resultados registrados aún.</div>';
       return;
     }
-    // Mostrar tabla de posiciones general con detalle de kills y partidas
-    el.innerHTML = `
-      <div style="margin-bottom:.8rem;color:var(--t4);font-size:.8rem">
-        Tabla acumulada de todas las rondas
-      </div>
-      <table class="trn-res-tabla">
-        <thead><tr>
-          <th>#</th><th>Equipo</th>
-          <th style="text-align:right">PJ</th>
-          <th style="text-align:right">Kills</th>
-          <th style="text-align:right">Pts</th>
-        </tr></thead>
-        <tbody>${TABLA.map((f, i) => `<tr>
-          <td class="${i===0?'pos1':i===1?'pos2':i===2?'pos3':''}" style="font-weight:700">${i+1}</td>
-          <td>
-            <span style="font-weight:600">${esc(f.nombre)}</span>
-            ${f.ig ? `<span style="color:var(--t4);font-size:.72rem;margin-left:.4rem">@${esc(f.ig)}</span>` : ''}
-          </td>
-          <td style="text-align:right;color:var(--t4)">${f.partidas||0}</td>
-          <td style="text-align:right;color:var(--t4)">${f.kills_total||0}</td>
-          <td style="text-align:right;font-weight:700;color:var(--primary)">${f.puntos_total||0}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table>`;
+    const fases = rd.fases || [...new Set(rd.grupos.map(g=>g.fase))];
+    let html = '';
+    for (const fase of fases) {
+      const grupos = rd.grupos.filter(g=>g.fase===fase);
+      if (!grupos.length) continue;
+      html += `<div class="trn-ronda-titulo">${esc(fase)}</div>`;
+      for (const g of grupos) {
+        const filas = _rSort((g.filas||[]).filter(f=>f.equipo?.trim()));
+        const clasifican = parseInt(g.clasifican)||0;
+        if (!filas.length) continue;
+        html += `<div class="trn-partida-card">
+          <div class="trn-partida-head">
+            <span style="font-weight:600">${esc(g.titulo)}</span>
+            ${clasifican?`<span style="color:var(--primary);font-size:.75rem">Clasifican ${clasifican}</span>`:''}
+          </div>
+          <table class="trn-res-tabla">
+            <thead><tr><th>#</th><th>Equipo</th><th style="text-align:right">Kills</th><th style="text-align:right">P.P</th><th style="text-align:right">Sanc.</th><th style="text-align:right">Total</th></tr></thead>
+            <tbody>${filas.map((f,i)=>`<tr>
+              <td class="${i===0?'pos1':i===1?'pos2':i===2?'pos3':''}">${i+1}</td>
+              <td style="font-weight:${i<clasifican?'700':'400'}">${esc(f.equipo)}${i<clasifican&&clasifican?' <small style="color:var(--primary);font-size:.65rem">→</small>':''}</td>
+              <td style="text-align:right">${f.kills||0}</td>
+              <td style="text-align:right;color:var(--primary)">${f.pp||0}</td>
+              <td style="text-align:right;color:var(--t4)">${f.sancion||0}</td>
+              <td style="text-align:right;font-weight:700;color:var(--primary)">${_rTotal(f)}</td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>`;
+      }
+    }
+    el.innerHTML = html || '<div class="trn-vacio"><i class="fa-solid fa-ghost"></i> Sin resultados aún.</div>';
   }
 
   /* ── EQUIPOS ──────────────────────────────────────────────── */
