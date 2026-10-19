@@ -70,33 +70,35 @@ body[data-tema="dragonfestfem"] {  /* Femenino: rosa */
   --light: #FFF0F7; --gray: #C7A3B5;
   --bg-a: #0D0308; --bg-b: #1F0A16;
 }
-body[data-tema="torneos"] {  /* Hub de torneos: negro profundo + dorado */
-  --primary: #D8C395; --primary-rgb: 216,195,149;
-  --accent: #F4EEDC;  --accent-rgb: 244,238,220;
-  --on-primary: #0A0A0A;
-  --light: #F4EEDC; --gray: #8A8070;
-  --bg-a: #0A0A0A; --bg-b: #1F1F1F;
-  --line: rgba(216,195,149,.25);
-  --t1: #D8C395; --t2: #F4EEDC; --t3: #2A2A2A; --t4: #B8A875; --t5: #F4EEDC;
+body[data-tema="torneos"] {  /* Hub de torneos: cyberpunk — cyan neon */
+  --primary: #00eeff; --primary-rgb: 0,238,255;
+  --accent: #ff1f6a;  --accent-rgb: 255,31,106;
+  --on-primary: #05050e;
+  --light: #c8f0f8; --gray: #4a7080;
+  --bg-a: #06060e; --bg-b: #0e0e24;
+  --line: rgba(0,238,255,.2);
+  --t1: #00eeff; --t2: #c8f0f8; --t3: #141428; --t4: #00bbd4; --t5: #c8f0f8;
 }
-body[data-tema="torneos"] .site-header { background: rgba(10,10,10,.96); border-bottom: 1px solid rgba(216,195,149,.2); }
-body[data-tema="torneos"] .site-footer { background: #1F1F1F; border-top: 1px solid rgba(216,195,149,.18); color: #8A8070; }
-body[data-tema="torneos"] .site-footer a { color: #8A8070; }
-body[data-tema="torneos"] .site-footer a:hover { color: #D8C395; }
+body[data-tema="torneos"] .site-header { background: rgba(6,6,14,.97); border-bottom: 1px solid rgba(0,238,255,.22); box-shadow: 0 0 28px rgba(0,238,255,.05); }
+body[data-tema="torneos"] .site-footer { background: #0e0e24; border-top: 1px solid rgba(0,238,255,.15); color: #4a7080; }
+body[data-tema="torneos"] .site-footer a { color: #4a7080; }
+body[data-tema="torneos"] .site-footer a:hover { color: #00eeff; text-shadow: 0 0 8px rgba(0,238,255,.5); }
+body[data-tema="torneos"] .logo .t-a { text-shadow: 0 0 12px rgba(0,238,255,.6), 0 0 30px rgba(0,238,255,.25); }
 
-body[data-tema="corp"] {  /* Pumas Corp: negro profundo + dorado cálido */
-  --primary: #D8C395; --primary-rgb: 216,195,149;
-  --accent: #F4EEDC;  --accent-rgb: 244,238,220;
-  --on-primary: #0A0A0A;
-  --light: #F4EEDC; --gray: #8A8070;
-  --bg-a: #0A0A0A; --bg-b: #181818;
-  --line: rgba(216,195,149,.22);
-  --t1: #D8C395; --t2: #F4EEDC; --t3: #252525; --t4: #B8A875; --t5: #F4EEDC;
+body[data-tema="corp"] {  /* Pumas Corp: cyberpunk — cyan neon */
+  --primary: #00eeff; --primary-rgb: 0,238,255;
+  --accent: #ff1f6a;  --accent-rgb: 255,31,106;
+  --on-primary: #05050e;
+  --light: #c8f0f8; --gray: #4a7080;
+  --bg-a: #06060e; --bg-b: #0e0e24;
+  --line: rgba(0,238,255,.18);
+  --t1: #00eeff; --t2: #c8f0f8; --t3: #141428; --t4: #00bbd4; --t5: #c8f0f8;
 }
-body[data-tema="corp"] .site-header { background: rgba(10,10,10,.96); border-bottom: 1px solid rgba(216,195,149,.18); }
-body[data-tema="corp"] .site-footer { background: #181818; border-top: 1px solid rgba(216,195,149,.15); color: #8A8070; }
-body[data-tema="corp"] .site-footer a { color: #8A8070; }
-body[data-tema="corp"] .site-footer a:hover { color: #D8C395; }
+body[data-tema="corp"] .site-header { background: rgba(6,6,14,.97); border-bottom: 1px solid rgba(0,238,255,.22); box-shadow: 0 0 28px rgba(0,238,255,.05); }
+body[data-tema="corp"] .site-footer { background: #0e0e24; border-top: 1px solid rgba(0,238,255,.15); color: #4a7080; }
+body[data-tema="corp"] .site-footer a { color: #4a7080; }
+body[data-tema="corp"] .site-footer a:hover { color: #00eeff; text-shadow: 0 0 8px rgba(0,238,255,.5); }
+body[data-tema="corp"] .logo .t-a { text-shadow: 0 0 12px rgba(0,238,255,.6), 0 0 30px rgba(0,238,255,.25); }
 
 * { box-sizing: border-box; }
 html.pg-verificando body { visibility: hidden; }
@@ -117,8 +119,13 @@ body {
 
 body::before {
   position: fixed; z-index: -1; inset: 0; pointer-events: none; content: "";
-  background-image: radial-gradient(circle, rgba(var(--primary-rgb), .065) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image: radial-gradient(circle, rgba(var(--primary-rgb), .08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+body::after {
+  position: fixed; z-index: -1; inset: 0; pointer-events: none; content: "";
+  background-image: repeating-linear-gradient(180deg, transparent 0px, transparent 2px, rgba(0,0,0,.04) 2px, rgba(0,0,0,.04) 3px);
 }
 
 h1, h2, h3, .logo, .btn-access, .btn-generar, label, .pg-th {
