@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C79JND219Y"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-C79JND219Y');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Acceso · Corp Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="icon" href="../imagenes/LOGO PUMAS WEB.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../portal-kit/portal.js?v=20261019" data-portal="torneos" data-sin-efecto></script>
+<style>
+:root {
+  --g:  #D8C395; --g2: #F4EEDC; --ga: #B8A875;
+  --b:  #0A0A0A; --b2: #131313; --b3: #1C1C1C;
+  --ln: rgba(216,195,149,.18);
+  --tx: #F4EEDC; --gray: #6A6050;
+  --err: #ff8a8d; --ok: #6ee7a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--b);
+  color:var(--tx);
+  font:15px/1.5 'Segoe UI',sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100dvh;
+  overflow:hidden;
+}
+
+/* ── FONDO ── */
+.bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%,   rgba(216,195,149,.10) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 90% 90%,   rgba(216,195,149,.06) 0%, transparent 55%),
+    radial-gradient(ellipse 30% 30% at 10% 80%,   rgba(216,195,149,.05) 0%, transparent 55%),
+    var(--b);
+}
+.bg::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(135deg,transparent 0 88px,rgba(216,195,149,.025) 89px,transparent 90px 180px);
+}
+
+/* ── TARJETA ── */
+.card{
+  position:relative;z-index:1;
+  width:min(100% - 2rem, 400px);
+  background:var(--b2);
+  border:1px solid var(--ln);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,.55);
+  animation:slideUp .4s cubic-bezier(.22,.8,.25,1) both;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+
+/* ── BANDA SUPERIOR ── */
+.card-top{
+  padding:2rem 2rem 1.6rem;
+  text-align:center;
+  background:linear-gradient(180deg, rgba(216,195,149,.06) 0%, transparent 100%);
+  border-bottom:1px solid var(--ln);
+}
+.card-logo{
+  width:64px;height:64px;border-radius:50%;
+  border:2px solid rgba(216,195,149,.3);
+  object-fit:contain;
+  background:rgba(216,195,149,.05);
+  padding:6px;
+  margin-bottom:1rem;
+}
+.card-title{
+  font-family:'Michroma',sans-serif;
+  font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--g);margin-bottom:.25rem;
+}
+.card-sub{color:var(--gray);font-size:.78rem;letter-spacing:.05em}
+
+/* ── FORMULARIO ── */
+.card-body{padding:1.8rem 2rem 2rem}
+.fg{margin-bottom:1rem}
+.fg label{
+  display:block;
+  font-family:'Michroma',sans-serif;
+  font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--g);margin-bottom:.4rem;
+}
+.inp-wrap{position:relative}
+.inp-wrap i{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--gray);font-size:.82rem;pointer-events:none;
+}
+.inp-wrap input{
+  width:100%;
+  background:#0d0d0d;
+  border:1px solid var(--ln);
+  border-radius:6px;
+  color:var(--tx);
+  padding:10px 10px 10px 32px;
+  outline:none;
+  font-size:.93rem;
+  transition:border-color .15s,box-shadow .15s;
+}
+.inp-wrap input:focus{
+  border-color:var(--g);
+  box-shadow:0 0 0 3px rgba(216,195,149,.12);
+}
+.inp-wrap input::placeholder{color:var(--gray);opacity:.6}
+input[type=password]{letter-spacing:.06em}
+
+/* ── BOTÓN ── */
+.btn-login{
+  width:100%;margin-top:.4rem;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.75rem 1.2rem;
+  background:var(--g);color:#0A0A0A;
+  border:none;border-radius:6px;cursor:pointer;
+  font-family:'Michroma',sans-serif;font-size:.78rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  transition:background .15s,box-shadow .15s,transform .1s;
+}
+.btn-login:hover:not(:disabled){
+  background:var(--g2);
+  box-shadow:0 4px 18px rgba(216,195,149,.28);
+}
+.btn-login:active:not(:disabled){transform:scale(.98)}
+.btn-login:disabled{opacity:.55;cursor:not-allowed}
+
+/* ── STATUS ── */
+.st{
+  margin-top:.9rem;font-size:.82rem;text-align:center;
+  min-height:1.1rem;color:var(--gray);
+}
+.st.err{color:var(--err)}
+.st.ok{color:var(--ok)}
+
+/* ── PIE ── */
+.card-foot{
+  padding:.75rem 2rem .9rem;
+  border-top:1px solid var(--ln);
+  text-align:center;
+}
+.card-foot a{
+  color:var(--gray);font-size:.78rem;
+  display:inline-flex;align-items:center;gap:.35rem;
+  transition:color .15s;
+}
+.card-foot a:hover{color:var(--g2)}
+
+/* ── SPINNER ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .7s linear infinite}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div class="card">
+  <div class="card-top">
+    <img src="../imagenes/LOGO PUMAS WEB.png" alt="Pumas" class="card-logo">
+    <div class="card-title">Corp Admin</div>
+    <div class="card-sub">Panel de administración</div>
+  </div>
+
+  <div class="card-body">
+    <div class="fg">
+      <label>Usuario</label>
+      <div class="inp-wrap">
+        <i class="fa-solid fa-user"></i>
+        <input type="text" id="l-usr" placeholder="Sin @" autocomplete="username" autofocus>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Contraseña</label>
+      <div class="inp-wrap">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="l-pass" autocomplete="current-password" placeholder="••••••••">
+      </div>
+    </div>
+    <button class="btn-login" id="btn-login">
+      <i class="fa-solid fa-right-to-bracket"></i> Entrar
+    </button>
+    <div class="st" id="l-st"></div>
+  </div>
+
+  <div class="card-foot">
+    <a href="../index.html"><i class="fa-solid fa-arrow-left"></i> Volver al inicio</a>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function st(tipo, msg) {
+  const el = $('l-st');
+  el.textContent = msg;
+  el.className = 'st' + (tipo ? ' ' + tipo : '');
+}
+
+// Si ya hay sesión válida, ir directo al admin
+(async function() {
+  try {
+    let ses = P.sesion();
+    if (!ses) ses = await P.validar();
+    if (ses && (P.tiene(ses,'super') || P.puede(ses,'torneos') || P.puede(ses,'portal:torneos'))) {
+      window.location.replace('index.html');
+    }
+  } catch(e) {}
+})();
+
+$('btn-login').addEventListener('click', async () => {
+  const usr  = $('l-usr').value.trim();
+  const pass = $('l-pass').value;
+  if (!usr || !pass) { st('err', 'Completa los campos'); return; }
+
+  const btn = $('btn-login');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Verificando…';
+  st('', '');
+
+  try {
+    const ok = await P.login(usr, pass);
+    if (!ok) throw new Error('creds');
+    const ses = P.sesion();
+    if (!(P.tiene(ses,'super') || P.puede(ses,'torneos') || P.puede(ses,'portal:torneos'))) {
+      throw new Error('acceso');
+    }
+    st('ok', '¡Bienvenido! Redirigiendo…');
+    setTimeout(() => window.location.replace('index.html'), 600);
+  } catch(e) {
+    st('err', e.message === 'acceso'
+      ? 'Sin permiso para este panel'
+      : 'Usuario o contraseña incorrectos');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+  }
+});
+
+$('l-pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('btn-login').click(); });
+$('l-usr').addEventListener('keydown',  e => { if (e.key === 'Enter') $('l-pass').focus(); });
+</script>
+</body>
+</html>

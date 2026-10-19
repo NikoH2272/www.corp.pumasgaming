@@ -32,11 +32,6 @@ input[type=date],input[type=datetime-local]{color-scheme:dark}
 select option{background:#111}
 label{display:block;margin-bottom:5px;color:var(--g);font:700 .7rem 'Michroma',sans-serif;letter-spacing:.08em;text-transform:uppercase}
 
-/* ── LOGIN ── */
-#ad-login{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:1.5rem;background:var(--b)}
-.ad-login-box{width:min(100%,380px);padding:2.2rem 2rem;background:var(--b2);border:1px solid var(--ln);border-top:3px solid var(--g);border-radius:8px}
-.ad-login-box h2{font-family:'Michroma',sans-serif;color:var(--g);font-size:.95rem;letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:1.6rem}
-.ad-login-box .fg{margin-bottom:14px}
 
 /* ── LAYOUT ── */
 #ad-app{display:none}
@@ -169,25 +164,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </head>
 <body>
 
-<!-- ═══ LOGIN ════════════════════════════════════════════════════════ -->
-<div id="ad-login">
-  <div class="ad-login-box">
-    <h2><img src="../imagenes/LOGO PUMAS WEB.png" alt="" style="width:40px;vertical-align:middle;margin-right:.5rem">Corp Admin</h2>
-    <div class="fg">
-      <label>Usuario</label>
-      <input type="text" id="l-usr" placeholder="Sin @" autocomplete="username">
-    </div>
-    <div class="fg">
-      <label>Contraseña</label>
-      <input type="password" id="l-pass" autocomplete="current-password">
-    </div>
-    <button class="btn btn-g" id="btn-login" style="width:100%;margin-top:.3rem;justify-content:center">
-      <i class="fa-solid fa-right-to-bracket"></i> Entrar
-    </button>
-    <div class="st" id="l-st"></div>
-  </div>
-</div>
-
 <!-- ═══ APP ══════════════════════════════════════════════════════════ -->
 <div id="ad-app">
   <div class="ad-wrap">
@@ -210,7 +186,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </nav>
       <div class="ad-side-foot">
         <a href="../" target="_blank" class="btn btn-s btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Corp</a>
-        <button class="btn btn-s btn-sm" onclick="P.logout('../')"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <button class="btn btn-s btn-sm" onclick="P.logout('login.html')"><i class="fa-solid fa-right-from-bracket"></i></button>
       </div>
     </aside>
 
@@ -741,35 +717,14 @@ function tieneAcceso(ses) {
 async function tryAutoLogin() {
   try {
     let ses = P.sesion();
+    if (!ses) ses = await P.validar();
     if (ses && tieneAcceso(ses)) { mostrarApp(ses); return; }
-    ses = await P.validar();
-    if (ses && tieneAcceso(ses)) mostrarApp(ses);
   } catch(e) {}
+  // Sin sesión válida → ir al login
+  window.location.replace('login.html');
 }
 
-$('btn-login').addEventListener('click', async () => {
-  const usr = $('l-usr').value.trim();
-  const pass = $('l-pass').value;
-  if (!usr || !pass) { st('l-st','err','Completa los campos'); return; }
-  const btn = $('btn-login');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Entrando…';
-  try {
-    const ok = await P.login(usr, pass);
-    if (!ok) throw new Error('credenciales');
-    const ses = P.sesion();
-    if (!tieneAcceso(ses)) throw new Error('sin_acceso');
-    mostrarApp(ses);
-  } catch(e) {
-    st('l-st','err', e.message==='sin_acceso' ? 'Sin acceso a este módulo' : 'Usuario o contraseña incorrectos');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
-  }
-});
-$('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') $('btn-login').click(); });
-
 function mostrarApp(ses) {
-  $('ad-login').style.display = 'none';
   $('ad-app').style.display   = '';
   $('ad-usuario').textContent = ses?.nombre || ses?.usuario || '—';
   trn.cargar(); rmp.cargar(); ali.cargar(); sub.cargar(); cal.cargar(); chan.cargar();

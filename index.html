@@ -840,6 +840,27 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', cargar);
   else cargar();
+
+  /* ── Scrollspy: marca el link activo según la sección visible ── */
+  (function(){
+    const SECS = ['en-vivo','calendario','inscripciones','actividades','relampagos','comunicacion'];
+    const links = {};
+    SECS.forEach(id => {
+      const a = document.querySelector(`.main-nav a[href="#${id}"]`);
+      if (a) links[id] = a;
+    });
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (links[e.target.id]) {
+          links[e.target.id].classList.toggle('activo', e.isIntersecting);
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+    SECS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+  })();
 })();
 </script>
 </body>
