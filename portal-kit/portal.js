@@ -35,7 +35,8 @@
         // Ascensos (base aparte, sql/17): AZA y el módulo de pruebas usan la misma herramienta
         ascensosaza:    { nombre: 'Ascensos AZA',     url: '/ascensos/',        admin: '/ascensos/admin.html' },
         pruebas:        { nombre: 'Pruebas',          url: '/pruebas/',         admin: '/pruebas/admin.html' },
-        torneos:        { nombre: 'Torneos',          url: '/torneos/',         admin: '/admin/torneos.html' }
+        torneos:        { nombre: 'Torneos',          url: '/torneos/',         admin: '/admin/torneos.html' },
+        corp:           { nombre: 'Corp',             url: '/',                 admin: '/admin/' }
         // + los módulos creados desde el panel (cargarModulos): /modulo/?p=<id>
     };
 

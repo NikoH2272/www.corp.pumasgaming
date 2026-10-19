@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C79JND219Y"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-C79JND219Y');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Corp | Pumas Gaming</title>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="icon" href="imagenes/LOGO PUMAS WEB.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="portal-kit/portal.js?v=20261019" data-portal="torneos" data-modo="publico" data-sin-efecto></script>
+<style id="sp-theme">
+:root{
+  --sp-pri:#D8C395;--sp-acc:#F4EEDC;--sp-bg:#0A0A0A;
+  --sp-bg2:#141414;--sp-bg3:#1E1E1E;--sp-ln:rgba(216,195,149,.18);
+  --sp-tx:#F4EEDC;--sp-gray:#7A7060;
+}
+</style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--sp-bg);color:var(--sp-tx);font:15px/1.5 'Segoe UI',sans-serif;min-height:100dvh;transition:background .3s}
+a{color:inherit;text-decoration:none}
+
+.sp-bar{height:4px;background:var(--sp-pri);width:100%}
+.sp-nav{display:flex;align-items:center;gap:1rem;padding:.85rem 1.5rem;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);border-bottom:1px solid var(--sp-ln);position:sticky;top:0;z-index:50}
+.sp-logo{display:flex;align-items:center;gap:.65rem;font-family:'Michroma',sans-serif;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;color:var(--sp-pri)}
+.sp-logo img{width:32px;border-radius:50%;object-fit:cover}
+.sp-back{margin-left:auto;font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sp-gray);padding:.3rem .6rem;border-radius:4px;transition:color .15s;display:flex;align-items:center;gap:.4rem}
+.sp-back:hover{color:var(--sp-pri)}
+
+.sp-hero{padding:5rem 1.5rem 3.5rem;text-align:center;position:relative;overflow:hidden}
+.sp-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% -5%,rgba(var(--sp-pri-rgb),.12) 0%,transparent 65%);pointer-events:none}
+.sp-hero-inner{position:relative;z-index:1}
+.sp-hero-logo{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--sp-pri);margin:0 auto .8rem;display:block;opacity:0;transition:opacity .4s}
+.sp-hero-logo.loaded{opacity:1}
+.sp-hero h1{font-family:'Michroma',sans-serif;font-size:clamp(1.5rem,4vw,2.5rem);letter-spacing:.1em;text-transform:uppercase;color:var(--sp-pri)}
+.sp-hero p{color:var(--sp-gray);margin-top:.5rem;font-size:.95rem;max-width:600px;margin-left:auto;margin-right:auto}
+.sp-chips{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+.sp-chip{padding:.25rem .7rem;background:rgba(255,255,255,.06);border:1px solid var(--sp-ln);border-radius:20px;font:.68rem 'Michroma',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--sp-acc)}
+
+.sp-wrap{max-width:1100px;margin:0 auto;padding:0 1.2rem 4rem}
+.sp-section{margin:2.5rem 0}
+.sp-section-title{font-family:'Michroma',sans-serif;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sp-pri);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--sp-ln);display:flex;align-items:center;gap:.5rem}
+
+/* TORNEOS */
+.sp-trn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.sp-trn-card{background:var(--sp-bg2);border:1px solid var(--sp-ln);border-radius:8px;overflow:hidden;transition:transform .18s,border-color .18s;cursor:pointer}
+.sp-trn-card:hover{transform:translateY(-3px);border-color:rgba(216,195,149,.4)}
+.sp-trn-img{width:100%;height:110px;object-fit:cover;background:var(--sp-bg3);display:flex;align-items:center;justify-content:center;color:var(--sp-gray)}
+.sp-trn-img img{width:100%;height:100%;object-fit:cover}
+.sp-trn-body{padding:.9rem 1rem}
+.sp-trn-nombre{font-family:'Michroma',sans-serif;font-size:.88rem;color:var(--sp-pri);margin-bottom:.3rem}
+.sp-trn-meta{font-size:.78rem;color:var(--sp-gray);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.chip{display:inline-block;padding:.15rem .5rem;border-radius:20px;font:.63rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.chip-activo,.chip-inscripciones{background:rgba(110,231,168,.12);color:#6ee7a8;border:1px solid rgba(110,231,168,.3)}
+.chip-en_curso,.chip-en_juego{background:rgba(255,198,89,.12);color:#FFD54A;border:1px solid rgba(255,198,89,.3)}
+.chip-finalizado{background:rgba(216,195,149,.1);color:var(--sp-pri);border:1px solid rgba(216,195,149,.25)}
+.chip-borrador{background:rgba(100,100,100,.2);color:var(--sp-gray);border:1px solid rgba(100,100,100,.3)}
+.chip-gratis{background:rgba(110,231,168,.1);color:#6ee7a8;border:1px solid rgba(110,231,168,.3)}
+.chip-pago{background:rgba(216,195,149,.1);color:var(--sp-pri);border:1px solid rgba(216,195,149,.25)}
+
+/* BANNER */
+.sp-banner{width:100%;max-height:280px;object-fit:cover;border-radius:8px;display:block;border:1px solid var(--sp-ln);margin:1.5rem 0}
+
+/* INFO EXTRA */
+.sp-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.7rem;margin:1.5rem 0}
+.sp-info-card{background:var(--sp-bg2);border:1px solid var(--sp-ln);border-radius:6px;padding:.7rem 1rem}
+.sp-info-card label{display:block;font:.6rem 'Michroma',sans-serif;letter-spacing:.08em;color:var(--sp-pri);text-transform:uppercase;margin-bottom:3px}
+.sp-info-card span{font-size:.9rem}
+
+/* CONTACTO */
+.sp-contacto{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.2rem}
+.sp-contacto a{display:flex;align-items:center;gap:.5rem;padding:.45rem .9rem;border:1.5px solid var(--sp-ln);border-radius:5px;font:.72rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sp-tx);transition:all .15s}
+.sp-contacto a:hover{border-color:var(--sp-pri);color:var(--sp-pri)}
+
+/* LOADING / ERROR */
+.sp-loading{display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:.8rem;color:var(--sp-gray)}
+.sp-loading i{font-size:2rem;opacity:.3}
+.sp-err{text-align:center;padding:3rem 1.5rem;color:var(--sp-gray)}
+.spin{animation:spin 1s linear infinite;display:inline-block}@keyframes spin{to{transform:rotate(360deg)}}
+
+.sp-footer{border-top:1px solid var(--sp-ln);padding:2rem 1.5rem;text-align:center;color:var(--sp-gray);font-size:.78rem;margin-top:3rem}
+.sp-footer a{color:var(--sp-gray);transition:color .15s}.sp-footer a:hover{color:var(--sp-pri)}
+.sp-footer strong{color:var(--sp-pri)}
+
+@media(max-width:640px){
+  .sp-trn-grid{grid-template-columns:1fr}
+  .sp-info-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="sp-loading" class="sp-loading">
+  <i class="fa-solid fa-circle-notch spin"></i>
+  <span>Cargando…</span>
+</div>
+
+<div id="sp-root" style="display:none">
+  <div class="sp-bar" id="sp-bar"></div>
+
+  <nav class="sp-nav">
+    <div class="sp-logo" id="sp-nav-logo">
+      <img id="sp-nav-img" src="imagenes/LOGO PUMAS WEB.png" alt="">
+      <span id="sp-nav-nombre">Corp</span>
+    </div>
+    <a href="index.html" class="sp-back"><i class="fa-solid fa-arrow-left"></i> Inicio</a>
+  </nav>
+
+  <section class="sp-hero" id="sp-hero">
+    <div class="sp-hero-inner">
+      <img id="sp-hero-logo" class="sp-hero-logo" src="" alt="" style="display:none">
+      <h1 id="sp-titulo">—</h1>
+      <p id="sp-desc"></p>
+      <div class="sp-chips" id="sp-chips"></div>
+    </div>
+  </section>
+
+  <div class="sp-wrap" id="sp-contenido"></div>
+</div>
+
+<div id="sp-err" class="sp-err" style="display:none">
+  <i class="fa-solid fa-triangle-exclamation" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:.7rem;color:#D8C395"></i>
+  <strong style="font-family:'Michroma',sans-serif;font-size:1rem;color:#D8C395">Subpágina no encontrada</strong>
+  <p style="margin-top:.4rem;font-size:.88rem">Verifica que el enlace sea correcto o <a href="index.html" style="color:#D8C395">vuelve al inicio</a>.</p>
+</div>
+
+<footer class="sp-footer" id="sp-footer" style="display:none">
+  Powered by <strong>Pumas Corp</strong> · <a href="index.html">Inicio</a>
+</footer>
+
+<script>
+const P = window.PumasPortal;
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const $ = id => document.getElementById(id);
+const fmtFecha = iso => iso ? new Date(iso).toLocaleDateString('es',{year:'numeric',month:'long',day:'numeric'}) : null;
+const ESTADO_L = {borrador:'Borrador',inscripciones:'Inscripciones',en_curso:'En curso',finalizado:'Finalizado',activo:'Activo',en_juego:'En juego'};
+const JUEGOS = {free_fire:'Free Fire',cod:'Call of Duty',valorant:'Valorant',fortnite:'Fortnite',minecraft:'Minecraft'};
+
+function aplicarTema(sp){
+  const pri = sp.color_primary  || '#D8C395';
+  const acc = sp.color_accent   || '#F4EEDC';
+  const bg  = sp.color_bg       || '#0A0A0A';
+  const bg2 = ajustarColor(bg, 14);
+  const bg3 = ajustarColor(bg, 25);
+  const ln  = hexAlpha(pri, 0.18);
+  const gray= '#7A7060';
+
+  const root = `:root{
+    --sp-pri:${pri};--sp-acc:${acc};--sp-bg:${bg};
+    --sp-bg2:${bg2};--sp-bg3:${bg3};--sp-ln:${ln};
+    --sp-tx:${acc};--sp-gray:${gray};
+  }`;
+  $('sp-theme').textContent = root;
+  document.documentElement.style.setProperty('--sp-pri', pri);
+}
+
+function ajustarColor(hex, aumento){
+  hex=hex.replace('#','');
+  const r=Math.min(255,parseInt(hex.slice(0,2),16)+aumento);
+  const g=Math.min(255,parseInt(hex.slice(2,4),16)+aumento);
+  const b=Math.min(255,parseInt(hex.slice(4,6),16)+aumento);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+function hexAlpha(hex,alpha){
+  hex=hex.replace('#','');
+  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+async function cargar(){
+  const slug = new URLSearchParams(location.search).get('p');
+  if(!slug){ mostrarError(); return; }
+
+  try{
+    const sp = await P.corpSubpaginas.porSlug(slug);
+    if(!sp){ mostrarError(); return; }
+
+    aplicarTema(sp);
+    document.title = sp.nombre + ' | Corp Pumas Gaming';
+
+    // Nav
+    $('sp-nav-nombre').textContent = sp.nombre;
+    if(sp.logo_url){
+      const img=$('sp-nav-img'); img.src=sp.logo_url; img.style.borderRadius='50%';
+    }
+
+    // Hero
+    $('sp-titulo').textContent = sp.nombre;
+    if(sp.descripcion) $('sp-desc').textContent = sp.descripcion;
+    if(sp.logo_url){
+      const hl=$('sp-hero-logo'); hl.src=sp.logo_url; hl.style.display='';
+      hl.onload = () => hl.classList.add('loaded');
+    }
+
+    // Chips de info básica del contenido
+    const chips = [];
+    const contenido = sp.contenido || {};
+    if(contenido.juego) chips.push(JUEGOS[contenido.juego]||contenido.juego);
+    if(contenido.tags) contenido.tags.forEach(t=>chips.push(t));
+    $('sp-chips').innerHTML = chips.map(c=>`<span class="sp-chip">${esc(c)}</span>`).join('');
+
+    // Construir contenido
+    await construirContenido(sp, contenido);
+
+    $('sp-loading').style.display='none';
+    $('sp-root').style.display='';
+    $('sp-footer').style.display='';
+  }catch(e){
+    mostrarError();
+  }
+}
+
+async function construirContenido(sp, conf){
+  const wrap = $('sp-contenido');
+  const partes = [];
+
+  // Banner si existe
+  if(sp.banner_url){
+    partes.push(`<img src="${esc(sp.banner_url)}" alt="${esc(sp.nombre)}" class="sp-banner" onerror="this.style.display='none'">`);
+  }
+
+  // Info cards si el contenido tiene datos extra
+  const infoItems = [];
+  if(conf.fecha) infoItems.push(['<i class="fa-regular fa-calendar"></i>','Fecha',fmtFecha(conf.fecha)]);
+  if(conf.premio) infoItems.push(['<i class="fa-solid fa-trophy"></i>','Premio',conf.premio]);
+  if(conf.precio) infoItems.push(['<i class="fa-solid fa-ticket"></i>','Precio',conf.precio]);
+  if(conf.plataforma) infoItems.push(['<i class="fa-solid fa-gamepad"></i>','Plataforma',conf.plataforma]);
+
+  if(infoItems.length){
+    partes.push(`<div class="sp-info-grid">${infoItems.map(([ic,lbl,val])=>`
+      <div class="sp-info-card"><label>${lbl}</label><span>${ic} ${esc(val)}</span></div>`).join('')}</div>`);
+  }
+
+  // Torneos relacionados si tiene portal vinculado
+  if(conf.mostrar_torneos !== false){
+    try{
+      const torneos = await P.torneos.publico(conf.portal_torneos || 'torneos');
+      const activos = torneos.filter(t=>t.estado!=='borrador'&&t.estado!=='finalizado').slice(0,6);
+      if(activos.length){
+        partes.push(`<div class="sp-section">
+          <div class="sp-section-title"><i class="fa-solid fa-trophy"></i> Torneos Activos</div>
+          <div class="sp-trn-grid">${activos.map(t=>`
+            <div class="sp-trn-card" onclick="window.open('ver.html?id=${t.id}','_blank')">
+              <div class="sp-trn-img">${t.banner_url?`<img src="${esc(t.banner_url)}" alt="${esc(t.nombre)}" loading="lazy">`:'<i class="fa-solid fa-trophy" style="font-size:2rem;opacity:.15"></i>'}</div>
+              <div class="sp-trn-body">
+                <div class="sp-trn-nombre">${esc(t.nombre)}</div>
+                <div class="sp-trn-meta">
+                  <span class="chip chip-${t.estado}">${ESTADO_L[t.estado]||t.estado}</span>
+                  ${t.juego?`<span style="color:var(--sp-gray)">${JUEGOS[t.juego]||t.juego}</span>`:''}
+                </div>
+              </div>
+            </div>`).join('')}</div>
+        </div>`);
+      }
+    }catch(_){}
+  }
+
+  // Relampagos si aplica
+  if(conf.mostrar_relampagos){
+    try{
+      const rmps = await P.relampagos.listar();
+      const visibles = rmps.slice(0,4);
+      if(visibles.length){
+        partes.push(`<div class="sp-section">
+          <div class="sp-section-title"><i class="fa-solid fa-bolt"></i> Relampagos</div>
+          <div class="sp-trn-grid">${visibles.map(r=>`
+            <div class="sp-trn-card" onclick="window.open('relampagos.html?id=${r.id}','_blank')">
+              <div class="sp-trn-img">${r.banner_url?`<img src="${esc(r.banner_url)}" alt="${esc(r.nombre)}" loading="lazy">`:'<i class="fa-solid fa-bolt" style="font-size:2rem;opacity:.15"></i>'}</div>
+              <div class="sp-trn-body">
+                <div class="sp-trn-nombre">${esc(r.nombre)}</div>
+                <div class="sp-trn-meta">
+                  <span class="chip chip-${r.estado}">${ESTADO_L[r.estado]||r.estado}</span>
+                  <span class="chip ${r.es_gratis?'chip-gratis':'chip-pago'}">${r.es_gratis?'Gratis':r.costo||'De pago'}</span>
+                </div>
+              </div>
+            </div>`).join('')}</div>
+        </div>`);
+      }
+    }catch(_){}
+  }
+
+  // Texto libre / descripción extendida
+  if(conf.cuerpo){
+    partes.push(`<div class="sp-section">
+      <div class="sp-section-title"><i class="fa-solid fa-file-lines"></i> Información</div>
+      <div style="color:var(--sp-gray);font-size:.92rem;line-height:1.7">${esc(conf.cuerpo).replace(/\n/g,'<br>')}</div>
+    </div>`);
+  }
+
+  // Contacto
+  const ctLinks = [];
+  if(conf.wa) ctLinks.push(`<a href="https://wa.me/${conf.wa.replace(/\D/g,'')}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`);
+  if(conf.ig) ctLinks.push(`<a href="https://instagram.com/${conf.ig.replace('@','')}" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i> Instagram</a>`);
+  if(conf.discord) ctLinks.push(`<a href="${esc(conf.discord)}" target="_blank" rel="noopener"><i class="fa-brands fa-discord"></i> Discord</a>`);
+  if(conf.link) ctLinks.push(`<a href="${esc(conf.link)}" target="_blank" rel="noopener"><i class="fa-solid fa-link"></i> Enlace</a>`);
+  if(ctLinks.length){
+    partes.push(`<div class="sp-section">
+      <div class="sp-section-title"><i class="fa-solid fa-address-card"></i> Contacto</div>
+      <div class="sp-contacto">${ctLinks.join('')}</div>
+    </div>`);
+  }
+
+  wrap.innerHTML = partes.join('') || `<div class="sp-err" style="padding:3rem 0"><i class="fa-solid fa-layer-group" style="font-size:2.5rem;opacity:.15;display:block;margin-bottom:.7rem;color:var(--sp-pri)"></i>Esta subpágina aún no tiene contenido configurado.</div>`;
+}
+
+function mostrarError(){
+  $('sp-loading').style.display='none';
+  $('sp-err').style.display='';
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',cargar);
+else cargar();
+</script>
+</body>
+</html>

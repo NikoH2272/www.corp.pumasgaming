@@ -539,30 +539,8 @@
   const CORP_KEY_ACT = 'corp_actividades';
   const CORP_KEY_CH  = 'corp_canales';
 
-  function leerStorage(key, def) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch { return def; }
-  }
-
-  const DEFAULT_ACTIVIDADES = [
-    { id:1, nombre:'Liga Semanal Free Fire', tipo:'gratis', descripcion:'Compite cada semana en las ligas abiertas de la comunidad Pumas.', juego:'Free Fire', icono:'gamepad', link:'#en-vivo' },
-    { id:2, nombre:'Entrenamiento VIP', tipo:'pago', precio:'$5.000 COP', descripcion:'Sesiones de coaching con jugadores experimentados para mejorar tu nivel.', juego:'Call of Duty', icono:'star', link:'#' },
-    { id:3, nombre:'Torneo Comunidad', tipo:'gratis', descripcion:'Torneos abiertos sin costo de inscripción para todos los miembros.', juego:'Todos', icono:'users', link:'#inscripciones' },
-    { id:4, nombre:'Copa Pumas Corp', tipo:'pago', precio:'$10.000 COP', descripcion:'Competencia premium con premios en efectivo y reconocimientos.', juego:'Free Fire', icono:'crown', link:'#' },
-    { id:5, nombre:'Clínica de Gameplay', tipo:'gratis', descripcion:'Revisión de partidas y consejos de mejora en transmisión en vivo.', juego:'Valorant', icono:'video', link:'#' },
-    { id:6, nombre:'Ruta de Ascenso', tipo:'pago', precio:'$8.000 COP', descripcion:'Programa estructurado para subir de rango con mentores certificados.', juego:'Free Fire', icono:'arrow-trend-up', link:'#' }
-  ];
-
-  const DEFAULT_CANALES = [
-    { id:1, nombre:'Discord Oficial', tipo:'discord', descripcion:'Servidor principal de la comunidad', link:'#' },
-    { id:2, nombre:'WhatsApp Free Fire', tipo:'whatsapp', descripcion:'Grupo oficial para jugadores de FF', link:'#' },
-    { id:3, nombre:'Instagram', tipo:'instagram', descripcion:'Noticias y resultados en tiempo real', link:'#' },
-    { id:4, nombre:'TikTok', tipo:'tiktok', descripcion:'Highlights y contenido de torneos', link:'#' },
-    { id:5, nombre:'Canal YouTube', tipo:'youtube', descripcion:'Transmisiones en vivo y replays', link:'#' },
-    { id:6, nombre:'Telegram Noticias', tipo:'telegram', descripcion:'Alertas de torneos y horarios', link:'#' }
-  ];
-
-  let ACTIVIDADES = leerStorage(CORP_KEY_ACT, DEFAULT_ACTIVIDADES);
-  let CANALES     = leerStorage(CORP_KEY_CH,  DEFAULT_CANALES);
+  let ACTIVIDADES = [];
+  let CANALES     = [];
   let RELAMPAGOS  = [];
   let ALIADOS     = [];
 
@@ -591,13 +569,24 @@
 
   async function cargar() {
     try {
-      const data = await P.torneos.publico('torneos');
+      const data = await P.torneos.publico('corp');
       TODOS = Array.isArray(data) ? data.filter(t => t.publico !== false && t.estado !== 'borrador') : [];
     } catch { TODOS = []; }
-    // Cargar relampagos y aliados desde DB en paralelo
+
+    // Cargar actividades y canales desde sitio_config (BD), fallback a localStorage, sin defaults fake
+    async function leerConfig(clave, fallback) {
+      try {
+        const { data } = await P.db().from('sitio_config').select('valor').eq('clave', clave).maybeSingle();
+        if (data?.valor != null) return data.valor;
+      } catch {}
+      try { const v = localStorage.getItem(clave); if (v) return JSON.parse(v); } catch {}
+      return fallback;
+    }
+
     Promise.all([
       P.relampagos ? P.relampagos.listar().then(r=>{RELAMPAGOS=r||[];renderRelampagos();}).catch(()=>{}) : Promise.resolve(),
-      P.eventosAliados ? P.eventosAliados.listar().then(a=>{if(a&&a.length){ACTIVIDADES=a.map(x=>({id:x.id,nombre:x.nombre,tipo:x.es_gratis?'gratis':'pago',precio:x.costo||'',descripcion:x.descripcion||'',juego:x.juego||'',icono:'bolt',link:x.discord||x.whatsapp||'#'}));} renderActividades('todas');}).catch(()=>{renderActividades('todas');}) : Promise.resolve()
+      leerConfig(CORP_KEY_ACT, []).then(acs => { ACTIVIDADES = acs; renderActividades('todas'); }),
+      leerConfig(CORP_KEY_CH,  []).then(chs => { CANALES = chs; renderCanales(); })
     ]);
     renderStats(); renderCarousel(); renderInscripciones();
     renderPremium(); renderCalendar(); renderActividades('todas'); renderCanales();

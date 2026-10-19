@@ -223,12 +223,32 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <i class="fa-solid fa-trophy" style="font-size:2rem;opacity:.15;display:block;margin-bottom:.5rem"></i>
               Selecciona un torneo o crea uno nuevo
             </div>
+            <!-- Quick create -->
+            <div id="trn-quick" style="display:none;padding:1.2rem">
+              <div style="font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--g);margin-bottom:.9rem">Nuevo torneo</div>
+              <div class="fg2">
+                <div class="fg"><label>Nombre *</label><input id="tq-nombre" required placeholder="Nombre del torneo"></div>
+                <div class="fg"><label>Juego</label>
+                  <select id="tq-juego">
+                    <option value="free_fire">Free Fire</option><option value="cod">Call of Duty</option>
+                    <option value="valorant">Valorant</option><option value="fortnite">Fortnite</option>
+                    <option value="minecraft">Minecraft</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:.5rem">
+                <button class="btn btn-s" onclick="trn.quickCreate()" style="flex:1"><i class="fa-solid fa-plus"></i> Crear torneo</button>
+                <button class="btn btn-r btn-sm" onclick="trn.cancelarQuick()"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <div class="st" id="st-trn-quick"></div>
+            </div>
             <div id="trn-contenido" style="display:none">
               <div class="tabs" id="trn-tabs">
                 <div class="tab on" data-t="info"     onclick="trn.tab(this)"><i class="fa-solid fa-circle-info"></i> Info</div>
                 <div class="tab" data-t="equipos"  onclick="trn.tab(this)"><i class="fa-solid fa-users"></i> Equipos</div>
-                <div class="tab" data-t="partidas" onclick="trn.tab(this)"><i class="fa-solid fa-list-ol"></i> Partidas</div>
-                <div class="tab" data-t="logs"     onclick="trn.tab(this)"><i class="fa-solid fa-file-lines"></i> Logs</div>
+                <div class="tab" data-t="partidas"   onclick="trn.tab(this)"><i class="fa-solid fa-list-ol"></i> Partidas</div>
+                <div class="tab" data-t="resultados" onclick="trn.tab(this)"><i class="fa-solid fa-ranking-star"></i> Resultados</div>
+                <div class="tab" data-t="logs"        onclick="trn.tab(this)"><i class="fa-solid fa-file-lines"></i> Logs</div>
               </div>
 
               <!-- INFO -->
@@ -298,13 +318,30 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     <div class="fg"><label>Método de pago</label><input id="t-metodo" placeholder="Nequi, Bancolombia, PayPal…"></div>
                   </div>
                   <div class="fg"><label>Descripción</label><textarea id="t-desc"></textarea></div>
+                  <div class="fg"><label>Premio</label><input id="t-premio" placeholder="Ej: $500.000 COP + trofeo"></div>
+                  <!-- Reglamento -->
+                  <div class="fg">
+                    <label style="display:flex;align-items:center;justify-content:space-between">
+                      Reglamento
+                      <span id="t-reg-btn-wrap" style="display:none">
+                        <button type="button" class="btn btn-s btn-sm" onclick="trn.verReglamento()" style="font-size:.7rem"><i class="fa-solid fa-eye"></i> Ver</button>
+                        <button type="button" class="btn btn-s btn-sm" onclick="trn.borrarReglamento()" style="font-size:.7rem;color:var(--err)"><i class="fa-solid fa-trash"></i></button>
+                      </span>
+                    </label>
+                    <div class="upload-zone" id="reg-zone" style="padding:1.2rem" onclick="document.getElementById('reg-file').click()">
+                      <i class="fa-regular fa-file-image"></i>
+                      Arrastra una imagen o haz clic para subir
+                    </div>
+                    <input type="file" id="reg-file" accept="image/*" style="display:none" onchange="trn.subirReglamento(this.files)">
+                    <div class="st" id="st-reg"></div>
+                  </div>
                   <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin:.5rem 0">Colores del portal</div>
                   <div class="fg2">
-                    <div class="fg"><label>Color primario</label><div class="color-row"><input type="color" id="t-c-pri"><input id="t-c-pri-h" maxlength="7" placeholder="#D8C395"></div></div>
-                    <div class="fg"><label>Acento</label><div class="color-row"><input type="color" id="t-c-acc"><input id="t-c-acc-h" maxlength="7" placeholder="#F4EEDC"></div></div>
+                    <div class="fg"><label>Color primario</label><div class="color-row"><input type="color" id="t-c-pri" oninput="$('t-c-pri-h').value=this.value"><input id="t-c-pri-h" maxlength="7" placeholder="#D8C395" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))$('t-c-pri').value=this.value"></div></div>
+                    <div class="fg"><label>Acento</label><div class="color-row"><input type="color" id="t-c-acc" oninput="$('t-c-acc-h').value=this.value"><input id="t-c-acc-h" maxlength="7" placeholder="#F4EEDC" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))$('t-c-acc').value=this.value"></div></div>
                   </div>
                   <div class="fg2">
-                    <div class="fg"><label>Fondo</label><div class="color-row"><input type="color" id="t-c-bg"><input id="t-c-bg-h" maxlength="7" placeholder="#0A0A0A"></div></div>
+                    <div class="fg"><label>Fondo</label><div class="color-row"><input type="color" id="t-c-bg" oninput="$('t-c-bg-h').value=this.value"><input id="t-c-bg-h" maxlength="7" placeholder="#0A0A0A" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))$('t-c-bg').value=this.value"></div></div>
                     <div class="fg"><label>URL Logo</label><input id="t-logo" placeholder="https://…"></div>
                   </div>
                   <div class="fg"><label>URL Banner</label><input id="t-banner" placeholder="https://…"></div>
@@ -319,6 +356,30 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
               <!-- EQUIPOS -->
               <div class="tab-panel" id="trn-tab-equipos" style="padding:1.1rem">
+                <!-- Importación masiva -->
+                <div style="border:1px solid rgba(216,195,149,.3);border-radius:6px;padding:.9rem;margin-bottom:1rem;background:rgba(216,195,149,.04)">
+                  <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem"><i class="fa-solid fa-users"></i> Importar en masa</div>
+                  <div class="fg">
+                    <label>Equipos — uno por línea</label>
+                    <textarea id="eq-bulk" rows="5" placeholder="Equipo Alpha&#10;Equipo Beta&#10;Equipo Gamma&#10;…" style="resize:vertical;font-size:.85rem"></textarea>
+                  </div>
+                  <div class="fg2" style="align-items:flex-end;margin-top:.4rem">
+                    <div class="fg">
+                      <label>Tipo de sala</label>
+                      <select id="eq-bulk-tipo">
+                        <option value="12">Sala Normal — 12 por grupo</option>
+                        <option value="15">Sala de Liga — 15 por grupo</option>
+                      </select>
+                    </div>
+                    <div class="fg" style="display:flex;align-items:flex-end;padding-bottom:0">
+                      <button type="button" class="btn btn-s" onclick="trn.importarEquipos()" style="width:100%">
+                        <i class="fa-solid fa-layer-group"></i> Crear grupos
+                      </button>
+                    </div>
+                  </div>
+                  <div class="st" id="st-eq-bulk"></div>
+                </div>
+                <!-- Formulario individual -->
                 <form onsubmit="trn.guardarEq(event)" style="border:1px solid var(--ln);border-radius:6px;padding:.9rem;margin-bottom:1rem">
                   <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem" id="eq-titulo">Agregar equipo</div>
                   <div class="fg2">
@@ -374,6 +435,39 @@ button:disabled{opacity:.5;cursor:not-allowed}
                   <thead><tr><th>Fase</th><th>Ronda</th><th>Sala</th><th>Estado</th><th>Resultados</th><th></th></tr></thead>
                   <tbody id="pt-tbody"></tbody>
                 </table></div>
+              </div>
+
+              <!-- RESULTADOS -->
+              <div class="tab-panel" id="trn-tab-resultados" style="padding:1.1rem">
+                <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:.8rem">
+                  <div class="fg" style="flex:1;min-width:140px">
+                    <label>Partida</label>
+                    <select id="res-partida" onchange="trn.selResPartida()">
+                      <option value="">— Selecciona —</option>
+                    </select>
+                  </div>
+                  <div class="fg" style="flex:1;min-width:140px">
+                    <label>Tipo de sala</label>
+                    <select id="res-tipo" onchange="trn.renderResForm()">
+                      <option value="normal">Sala Normal (12 eq.)</option>
+                      <option value="liga">Sala de Liga (15 eq.)</option>
+                    </select>
+                  </div>
+                </div>
+                <div id="res-form-wrap" style="display:none">
+                  <div id="res-eq-tabla"></div>
+                  <div style="display:flex;gap:8px;margin-top:.8rem">
+                    <button type="button" class="btn btn-s" onclick="trn.guardarResultados()">
+                      <i class="fa-solid fa-floppy-disk"></i> Guardar resultados
+                    </button>
+                  </div>
+                  <div class="st" id="st-res"></div>
+                </div>
+                <!-- Tabla general de posiciones -->
+                <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin:1.2rem 0 .5rem;border-top:1px solid var(--ln);padding-top:.8rem">
+                  Tabla general
+                </div>
+                <div id="res-tabla"><div style="color:var(--gray);font-size:.8rem;padding:.3rem">—</div></div>
               </div>
 
               <!-- LOGS -->
@@ -703,7 +797,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
 <script>
 const P = window.PumasPortal;
-const PORTAL = 'torneos';
+const PORTAL = 'corp';
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const $ = id => document.getElementById(id);
 
@@ -825,6 +919,7 @@ const trn = (function(){
     actual=lista.find(t=>t.id===id); if(!actual)return;
     renderLista(); cargarInfo();
     $('trn-vacio').style.display='none';
+    $('trn-quick').style.display='none';
     $('trn-contenido').style.display='';
     $('trn-btn-del').style.display='';
     $('trn-ed-titulo').textContent=actual.nombre;
@@ -884,6 +979,11 @@ const trn = (function(){
     $('t-precio-wrap').style.display=pago?'':'none';
     $('t-metodo').value=t.config?.metodo_pago||'';
     $('t-desc').value=t.descripcion||'';
+    $('t-premio').value=t.config?.premio||'';
+    const regUrl=t.config?.reglamento_url||'';
+    $('reg-zone').style.borderColor=regUrl?'var(--g)':'';
+    $('t-reg-btn-wrap').style.display=regUrl?'':'none';
+    $('st-reg').innerHTML=regUrl?`<span class="ok"><i class="fa-solid fa-circle-check"></i> Reglamento cargado</span>`:'';
     $('t-logo').value=t.logo_url||'';
     $('t-banner').value=t.banner_url||'';
     $('t-pub').checked=!!t.publico;
@@ -914,7 +1014,9 @@ const trn = (function(){
           formato_equipos:fmtSel!=='custom'?parseInt(fmtSel):null,
           cronograma:cronograma.filter(g=>g.grupo||g.fecha),
           pago:$('t-pago').checked, precio:getPrecioStr('t-precio-val','t-precio-mon'),
-          metodo_pago:$('t-metodo').value.trim()||null
+          metodo_pago:$('t-metodo').value.trim()||null,
+          premio:$('t-premio').value.trim()||null,
+          reglamento_url:actual?.config?.reglamento_url||null
         },
         colores:{primary:$('t-c-pri-h').value,accent:$('t-c-acc-h').value,bg:$('t-c-bg-h').value}
       };
@@ -939,14 +1041,48 @@ const trn = (function(){
 
   function nuevo(){
     actual=null; renderLista();
-    $('trn-vacio').style.display='none'; $('trn-contenido').style.display='';
-    $('trn-btn-del').style.display='none'; $('trn-ed-titulo').textContent='Nuevo torneo';
-    tabById('info');
-    ['t-nombre','t-desc','t-logo','t-banner','t-cupos','t-n-eq','t-fecha-txt','t-precio-val','t-metodo'].forEach(id=>$(id).value='');
-    $('t-juego').value='free_fire'; $('t-estado').value='borrador'; $('t-pub').checked=false;
-    $('t-fi').value=''; $('t-ff').value='';
-    $('t-link-pub').style.display='none'; $('t-precio-wrap').style.display='none'; $('t-pago').checked=false;
-    $('st-trn-info').className='st';
+    $('trn-vacio').style.display='none';
+    $('trn-quick').style.display='';
+    $('trn-contenido').style.display='none';
+    $('trn-btn-del').style.display='none';
+    $('trn-ed-titulo').textContent='Nuevo torneo';
+    $('tq-nombre').value=''; $('tq-juego').value='free_fire';
+    $('st-trn-quick').className='st'; $('st-trn-quick').textContent='';
+    setTimeout(()=>$('tq-nombre').focus(),50);
+  }
+
+  function cancelarQuick(){
+    $('trn-quick').style.display='none';
+    $('trn-vacio').style.display='';
+    $('trn-ed-titulo').textContent='Selecciona un torneo';
+  }
+
+  async function quickCreate(){
+    const nombre=$('tq-nombre').value.trim();
+    if(!nombre){$('tq-nombre').focus();return;}
+    const btn=$('trn-quick').querySelector('button');
+    btn.disabled=true;
+    st('st-trn-quick','','<i class="fa-solid fa-circle-notch spin"></i> Creando…');
+    try{
+      const res=await P.torneos.adminGuardar(PORTAL,{
+        id:null,nombre,juego:$('tq-juego').value,
+        estado:'borrador',publico:false,config:{},colores:{}
+      });
+      await cargar();
+      actual=lista.find(t=>t.id===(res?.id));
+      $('trn-quick').style.display='none';
+      if(actual){
+        renderLista();
+        $('trn-vacio').style.display='none';
+        $('trn-contenido').style.display='';
+        $('trn-btn-del').style.display='';
+        $('trn-ed-titulo').textContent=actual.nombre;
+        cargarInfo(); tabById('info');
+      }
+    }catch(err){
+      st('st-trn-quick','err',err.message||'Error al crear');
+      btn.disabled=false;
+    }
   }
 
   function togglePago(el){$('t-precio-wrap').style.display=el.checked?'':'none';}
@@ -955,9 +1091,10 @@ const trn = (function(){
   function tabById(nombre){
     document.querySelectorAll('#trn-tabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.t===nombre));
     document.querySelectorAll('#trn-contenido .tab-panel').forEach(p=>p.classList.toggle('on',p.id==='trn-tab-'+nombre));
-    if(nombre==='equipos'&&actual) cargarEquipos();
-    if(nombre==='partidas'&&actual) cargarPartidas();
-    if(nombre==='logs'&&actual){cargarLogs();cargarPartidas();}
+    if(nombre==='equipos'  &&actual) cargarEquipos();
+    if(nombre==='partidas' &&actual) cargarPartidas();
+    if(nombre==='resultados'&&actual) cargarResultados();
+    if(nombre==='logs'     &&actual){cargarLogs();cargarPartidas();}
   }
 
   async function cargarEquipos(){
@@ -1002,11 +1139,109 @@ const trn = (function(){
     catch(e){alert('Error: '+(e.message||''));}
   }
 
+  // ── Resultados ──────────────────────────────────────────────────────────
+  const PTS_POS = [0, 12, 9, 7, 5, 4, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1];
+  const FASE_L  = {grupos:'Grupos',cuartos:'Cuartos',semis:'Semis',final:'Final',gran_final:'Gran Final'};
+  let resEqs=[], resPid=null;
+
+  function calcPts(puesto, kills) {
+    return (PTS_POS[parseInt(puesto)||0]||1) + (parseInt(kills)||0);
+  }
+
+  async function cargarResultados(){
+    if(!partidas.length) await cargarPartidas();
+    const sel=$('res-partida');
+    const prev=sel.value;
+    sel.innerHTML='<option value="">— Selecciona —</option>'+
+      partidas.map(p=>`<option value="${p.id}">R${p.ronda} S${p.sala||'?'} · ${FASE_L[p.fase]||p.fase}</option>`).join('');
+    if(prev) sel.value=prev;
+    await renderTablaPos();
+  }
+
+  async function selResPartida(){
+    const pid=parseInt($('res-partida').value);
+    resPid=pid||null;
+    if(!pid){$('res-form-wrap').style.display='none';return;}
+    try{ resEqs=await P.torneos.adminEquipos(PORTAL,actual.id); }catch{ resEqs=[]; }
+    renderResForm();
+    $('res-form-wrap').style.display='';
+  }
+
+  function renderResForm(){
+    if(!resPid)return;
+    const tipo=$('res-tipo').value;
+    const max=tipo==='liga'?15:12;
+    const rows=Array.from({length:max},(_,i)=>{
+      const pos=i+1;
+      return `<tr>
+        <td style="color:var(--ga);font-weight:700;width:36px">${pos}</td>
+        <td><select class="res-eq-sel" style="width:100%" onchange="trn.updResRow(${i})">
+          <option value="">— Equipo —</option>
+          ${resEqs.map(eq=>`<option value="${eq.id}">${esc(eq.nombre)}</option>`).join('')}
+        </select></td>
+        <td style="width:80px"><input type="number" class="res-kills" min="0" value="0" style="width:70px" oninput="trn.updResRow(${i})"></td>
+        <td style="width:60px;text-align:right;color:var(--g);font-weight:700" id="res-pts-${i}">${PTS_POS[pos]||1}</td>
+      </tr>`;
+    });
+    $('res-eq-tabla').innerHTML=`<div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>#</th><th>Equipo</th><th>Kills</th><th style="text-align:right">Pts</th></tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table></div>`;
+  }
+
+  function updResRow(i){
+    const trs=$('res-eq-tabla').querySelectorAll('tbody tr');
+    if(!trs[i])return;
+    const kills=trs[i].querySelector('.res-kills')?.value||0;
+    const el=$(`res-pts-${i}`);
+    if(el) el.textContent=calcPts(i+1,kills);
+  }
+
+  async function guardarResultados(){
+    if(!resPid)return;
+    const trs=$('res-eq-tabla').querySelectorAll('tbody tr');
+    const resultados=[];
+    trs.forEach((tr,i)=>{
+      const sel=tr.querySelector('.res-eq-sel');
+      const kills=parseInt(tr.querySelector('.res-kills')?.value)||0;
+      if(sel?.value){
+        const eq=resEqs.find(e=>e.id==sel.value);
+        resultados.push({equipo_id:parseInt(sel.value),nombre:eq?.nombre||'',puesto:i+1,kills,puntos:calcPts(i+1,kills)});
+      }
+    });
+    if(!resultados.length){st('st-res','err','Ingresa al menos un equipo');return;}
+    st('st-res','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      await P.torneos.adminResultado(PORTAL,actual.id,resPid,resultados);
+      st('st-res','ok',`${resultados.length} resultados guardados`);
+      await renderTablaPos();
+    }catch(e){ st('st-res','err',e.message||'Error'); }
+  }
+
+  async function renderTablaPos(){
+    try{
+      const data=await P.torneos.tabla(actual.id);
+      const tabla=Array.isArray(data)?data:[];
+      $('res-tabla').innerHTML=!tabla.length
+        ?'<div style="color:var(--gray);font-size:.8rem;padding:.3rem">Sin resultados registrados aún</div>'
+        :`<div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>#</th><th>Equipo</th><th style="text-align:right">Kills</th><th style="text-align:right">PJ</th><th style="text-align:right">Pts</th></tr></thead>
+          <tbody>${tabla.map((f,i)=>`<tr>
+            <td style="${i<3?'color:var(--g);font-weight:700;font-family:Michroma,sans-serif':''}">${i+1}</td>
+            <td>${esc(f.nombre)}</td>
+            <td style="text-align:right;color:var(--gray)">${f.kills_total||0}</td>
+            <td style="text-align:right;color:var(--gray)">${f.partidas||0}</td>
+            <td style="text-align:right;color:var(--g);font-weight:700">${f.puntos_total||0}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`;
+    }catch{ $('res-tabla').innerHTML='<div style="color:var(--err);font-size:.8rem">Error cargando tabla</div>'; }
+  }
+
   async function cargarPartidas(){
     $('pt-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem"><i class="fa-solid fa-circle-notch spin"></i></td></tr>';
     try{
       partidas=await P.torneos.adminPartidas(PORTAL,actual.id);
-      const FASE={grupos:'Grupos',cuartos:'Cuartos',semis:'Semis',final:'Final',gran_final:'Gran Final'};
+      const FASE=FASE_L;
       $('pt-tbody').innerHTML=!partidas.length?'<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem">Sin partidas</td></tr>'
         :partidas.map(p=>`<tr>
           <td>${FASE[p.fase]||p.fase}</td>
@@ -1056,6 +1291,11 @@ const trn = (function(){
   dd.addEventListener('dragleave',()=>dd.classList.remove('drag-over'));
   dd.addEventListener('drop',e=>{e.preventDefault();dd.classList.remove('drag-over');subirLog(e.dataTransfer.files)});
 
+  const rz=$('reg-zone');
+  rz.addEventListener('dragover',e=>{e.preventDefault();rz.classList.add('drag')});
+  rz.addEventListener('dragleave',()=>rz.classList.remove('drag'));
+  rz.addEventListener('drop',e=>{e.preventDefault();rz.classList.remove('drag');const f=e.dataTransfer.files;if(f.length){const i=$('reg-file');try{i.files=f;}catch{} trn.subirReglamento(f);}});
+
   async function subirLog(files){
     if(!actual||!files.length)return;
     const file=files[0];st('st-log','','<i class="fa-solid fa-circle-notch spin"></i> Subiendo…');
@@ -1081,9 +1321,98 @@ const trn = (function(){
     }catch(e){$('log-tbody').innerHTML='<tr><td colspan="4" style="color:var(--err);padding:1rem;text-align:center">Error</td></tr>';}
   }
 
-  return {cargar,select,nuevo,borrar,guardar,tab,togglePago,
+  // ── Reglamento ───────────────────────────────────────────────────────────
+  async function subirReglamento(files){
+    if(!actual||!files||!files.length)return;
+    const file=files[0];
+    if(!file.type.startsWith('image/')){st('st-reg','err','Solo se permiten imágenes');return;}
+    st('st-reg','','<i class="fa-solid fa-circle-notch spin"></i> Procesando imagen…');
+    try{
+      // Intenta subir a Supabase Storage bucket 'reglamentos'
+      const ext=file.name.split('.').pop().toLowerCase();
+      const path=`${PORTAL}/${actual.id}/reglamento.${ext}`;
+      const {data,error}=await P.db().storage.from('reglamentos').upload(path,file,{upsert:true});
+      let url='';
+      if(!error&&data){
+        const {data:pub}=P.db().storage.from('reglamentos').getPublicUrl(path);
+        url=pub?.publicUrl||'';
+      }
+      if(!url){
+        // Fallback: base64 guardado en config
+        url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});
+      }
+      if(!actual.config) actual.config={};
+      actual.config.reglamento_url=url;
+      // Guardar sólo la config actualizada
+      await P.torneos.adminGuardar(PORTAL,{id:actual.id,config:{...actual.config}});
+      await cargar();actual=lista.find(t=>t.id===actual.id);
+      $('t-reg-btn-wrap').style.display='';
+      $('reg-zone').style.borderColor='var(--g)';
+      st('st-reg','ok','<i class="fa-solid fa-circle-check"></i> Reglamento guardado');
+      $('reg-file').value='';
+    }catch(err){st('st-reg','err',err.message||'Error al subir');}
+  }
+  function verReglamento(){
+    const url=actual?.config?.reglamento_url;if(!url)return;
+    const m=$('reg-modal');m.style.display='flex';$('reg-modal-img').src=url;
+  }
+  async function borrarReglamento(){
+    if(!actual||!confirm('¿Quitar el reglamento?'))return;
+    if(!actual.config) actual.config={};
+    actual.config.reglamento_url=null;
+    try{
+      await P.torneos.adminGuardar(PORTAL,{id:actual.id,config:{...actual.config}});
+      await cargar();actual=lista.find(t=>t.id===actual.id);
+      $('t-reg-btn-wrap').style.display='none';
+      $('reg-zone').style.borderColor='';
+      st('st-reg','ok','Reglamento eliminado');
+    }catch(err){st('st-reg','err',err.message||'Error');}
+  }
+
+  // ── Importación masiva de equipos ───────────────────────────────────────
+  async function importarEquipos(){
+    const raw=$('eq-bulk').value.trim();
+    if(!raw){st('st-eq-bulk','err','Pega la lista de equipos');return;}
+    const nombres=raw.split('\n').map(n=>n.trim()).filter(Boolean);
+    if(!nombres.length){st('st-eq-bulk','err','Lista vacía');return;}
+    const size=parseInt($('eq-bulk-tipo').value)||12;
+    const letras='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const grupos=[];
+    for(let i=0,gi=0;i<nombres.length;i+=size,gi++)
+      grupos.push({letra:letras[gi]||`G${gi+1}`,teams:nombres.slice(i,i+size)});
+    st('st-eq-bulk','',`<i class="fa-solid fa-circle-notch spin"></i> Guardando ${nombres.length} equipos en ${grupos.length} grupos…`);
+    let saved=0,errors=0;
+    for(const g of grupos){
+      for(const nombre of g.teams){
+        try{
+          await P.torneos.adminEquipoGuardar(PORTAL,actual.id,{id:null,nombre,grupo:`Grupo ${g.letra}`});
+          saved++;
+        }catch{errors++;}
+      }
+    }
+    await cargarEquipos();
+    const resumen=grupos.map(g=>`Grupo ${g.letra}: ${g.teams.length} eq.`).join(' · ');
+    st('st-eq-bulk',errors?'err':'ok',`${saved} equipos guardados · ${resumen}${errors?` · ${errors} errores`:''}`);
+    if(!errors){
+      $('eq-bulk').value='';
+      // Proponer cronograma: poblar automáticamente y abrir tab Info
+      cronograma=grupos.map(g=>({grupo:`Grupo ${g.letra}`,fecha:null}));
+      tabById('info');
+      renderCronograma();
+      const cronWrap=$('t-cronograma');
+      if(cronWrap) cronWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+      // Notificar al usuario
+      setTimeout(()=>st('st-trn-info','ok',`Grupos creados — agrega las fechas del cronograma abajo`),100);
+    }
+  }
+
+  return {cargar,select,nuevo,cancelarQuick,quickCreate,borrar,guardar,tab,togglePago,
     editarEq,resetEq,guardarEq,borrarEq,
-    editarPt,resetPt,guardarPt,borrarPt,subirLog};
+    editarPt,resetPt,guardarPt,borrarPt,subirLog,
+    addGrupo,delGrupo,updGrupo,
+    importarEquipos,
+    subirReglamento,verReglamento,borrarReglamento,
+    selResPartida,renderResForm,updResRow,guardarResultados};
 })();
 
 // ═══════════════════ RELAMPAGOS ══════════════════════════════════════
@@ -1249,7 +1578,7 @@ const rmp = (function(){
     catch(e){alert('Error: '+(e.message||''));}
   }
 
-  return{cargar,select,nuevo,borrar,guardar,tab,togglePago,editarEq,resetEq,guardarEq,borrarEq,addGrupo,delGrupo,updGrupo};
+  return{cargar,select,nuevo,borrar,guardar,tab,togglePago,editarEq,resetEq,guardarEq,borrarEq};
 })();
 
 // ═══════════════════ ALIADOS ═════════════════════════════════════════
@@ -1471,11 +1800,24 @@ const chan = (function(){
   const KEY_CH='corp_canales', KEY_AC='corp_actividades';
   const TIPOS=['discord','whatsapp','telegram','instagram','tiktok','youtube','general'];
 
-  function leer(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}}
+  function leerLocal(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}}
   function guardarLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 
-  function cargar(){
-    const chs=leer(KEY_CH,[]);const acs=leer(KEY_AC,[]);
+  async function leerDB(k,def){
+    try{
+      const {data,error}=await P.db().from('sitio_config').select('valor').eq('clave',k).maybeSingle();
+      if(!error&&data?.valor!=null)return data.valor;
+    }catch{}
+    return def;
+  }
+  async function guardarDB(k,v){
+    await P.db().from('sitio_config').upsert({clave:k,valor:v},{onConflict:'clave'});
+  }
+
+  async function cargar(){
+    const chs=await leerDB(KEY_CH,leerLocal(KEY_CH,[]));
+    const acs=await leerDB(KEY_AC,leerLocal(KEY_AC,[]));
+    guardarLocal(KEY_CH,chs); guardarLocal(KEY_AC,acs);
     renderCanales(chs);renderActs(acs);
   }
 
@@ -1514,7 +1856,7 @@ const chan = (function(){
   function delAct(i){
     const acs=leer(KEY_AC,[]);acs.splice(i,1);guardarLocal(KEY_AC,acs);renderActs(acs);}
 
-  function guardar(){
+  async function guardar(){
     const chs=[...$('chan-lista').querySelectorAll('div[style]')].map(row=>{
       const sels=row.querySelectorAll('select,input');
       return{tipo:sels[0].value,nombre:sels[1].value,descripcion:sels[2].value,link:sels[3].value};
@@ -1525,7 +1867,14 @@ const chan = (function(){
       return{nombre:sels[0].value,tipo:sels[1].value,precio:precioStr,link:sels[4].value};
     });
     guardarLocal(KEY_CH,chs);guardarLocal(KEY_AC,acs);
-    st('st-chan','ok','Guardado en este navegador. Recarga la página principal para ver cambios.');
+    st('st-chan','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      await guardarDB(KEY_CH,chs);
+      await guardarDB(KEY_AC,acs);
+      st('st-chan','ok','Guardado en servidor — cambios visibles en todos los navegadores.');
+    }catch(e){
+      st('st-chan','err','Solo guardado local. Error al subir: '+(e.message||''));
+    }
   }
 
   return{cargar,addCanal,delCanal,addAct,delAct,guardar};
@@ -1540,5 +1889,14 @@ function initTZHints(){
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{tryAutoLogin();initTZHints();});
 else { tryAutoLogin(); initTZHints(); }
 </script>
+
+<!-- Modal reglamento -->
+<div id="reg-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
+  <div onclick="event.stopPropagation()" style="position:relative;max-width:92vw;max-height:92vh">
+    <img id="reg-modal-img" alt="Reglamento" style="max-width:92vw;max-height:86vh;border-radius:8px;box-shadow:0 8px 50px rgba(0,0,0,.8);display:block">
+    <button onclick="document.getElementById('reg-modal').style.display='none'" style="position:absolute;top:-14px;right:-14px;background:var(--g);color:#0a0a0a;border:none;border-radius:50%;width:28px;height:28px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    <div style="text-align:center;margin-top:.6rem;font-size:.75rem;color:rgba(255,255,255,.45)">Clic fuera para cerrar</div>
+  </div>
+</div>
 </body>
 </html>
