@@ -773,6 +773,54 @@ html.pg-verificando body{visibility:hidden}
         vaciar:   (portal, tipo)                               => rpcAdmin  ('din_admin_vaciar',  { p_portal: portal, p_tipo: tipo })
     };
 
+    /* ---------------- Corp: Relampagos (sql/37) ---------------- */
+    async function dbWrite(tabla, datos) {
+        const c = db();
+        if (!c) throw new Error('Sin conexión a la base de datos');
+        const { id, ...rest } = datos;
+        const q = id
+            ? c.from(tabla).update(rest).eq('id', id).select().single()
+            : c.from(tabla).insert(rest).select().single();
+        const { data, error } = await q;
+        if (error) throw new Error(error.message);
+        return data;
+    }
+    async function dbDelete(tabla, id) {
+        const c = db();
+        if (!c) throw new Error('Sin conexión');
+        const { error } = await c.from(tabla).delete().eq('id', id);
+        if (error) throw new Error(error.message);
+    }
+
+    const relampagos = {
+        listar:  ()   => leerTabla(db().from('corp_relampagos').select('*').eq('publico', true).order('fecha', { ascending: false }).order('creado', { ascending: false })),
+        porId:   id   => db().from('corp_relampagos').select('*').eq('id', id).maybeSingle().then(r => { if (r.error) throw new Error(r.error.message); return r.data; }),
+        equipos: id   => leerTabla(db().from('corp_relampago_equipos').select('*').eq('relampago_id', id).order('puesto').order('puntos', { ascending: false })),
+        adminListar:           ()  => leerTabla(db().from('corp_relampagos').select('*').order('creado', { ascending: false })),
+        adminGuardar:          d   => dbWrite('corp_relampagos', d),
+        adminBorrar:           id  => dbDelete('corp_relampagos', id),
+        adminEquipos:          id  => leerTabla(db().from('corp_relampago_equipos').select('*').eq('relampago_id', id).order('puesto').order('puntos', { ascending: false })),
+        adminEquipoGuardar:    d   => dbWrite('corp_relampago_equipos', d),
+        adminEquipoBorrar:     id  => dbDelete('corp_relampago_equipos', id),
+    };
+
+    /* ---------------- Corp: Eventos Aliados (sql/37) ---------------- */
+    const eventosAliados = {
+        listar:        ()  => leerTabla(db().from('corp_eventos_aliados').select('*').eq('activo', true).order('orden').order('fecha')),
+        adminListar:   ()  => leerTabla(db().from('corp_eventos_aliados').select('*').order('orden').order('creado', { ascending: false })),
+        adminGuardar:  d   => dbWrite('corp_eventos_aliados', d),
+        adminBorrar:   id  => dbDelete('corp_eventos_aliados', id),
+    };
+
+    /* ---------------- Corp: Subpáginas (sql/37) ---------------- */
+    const corpSubpaginas = {
+        listar:       ()    => leerTabla(db().from('corp_subpaginas').select('*').eq('activo', true).order('nombre')),
+        porSlug:      slug  => db().from('corp_subpaginas').select('*').eq('slug', slug).eq('activo', true).maybeSingle().then(r => { if (r.error) throw new Error(r.error.message); return r.data; }),
+        adminListar:  ()    => leerTabla(db().from('corp_subpaginas').select('*').order('nombre')),
+        adminGuardar: d     => dbWrite('corp_subpaginas', d),
+        adminBorrar:  id    => dbDelete('corp_subpaginas', id),
+    };
+
     /* ---------------- Torneos aliados (sql/35) ---------------- */
     const torneos = {
         // Público
@@ -801,7 +849,9 @@ html.pg-verificando body{visibility:hidden}
         login, logout, validar, guard, puede, tiene, inicioDe, db, sesion: leerSesion,
         cargarEfecto, guardarEfecto, aplicarEfecto, usuarios, entrenos, respaldo, confirmar, escaparHtml,
         cargarModulos, olvidarModulos, datosPortal, modulos, aplicarColores, aplicarPersonalizacion, rgbDe, textoSobre,
-        sitio, sorteo, cupos, control, pumas, usuariosPortal, ascensos, baneados, ia, vip, stats, dinamica, torneos, cargarKit, faltaSql, segmentar
+        sitio, sorteo, cupos, control, pumas, usuariosPortal, ascensos, baneados, ia, vip, stats, dinamica, torneos,
+        relampagos, eventosAliados, corpSubpaginas,
+        cargarKit, faltaSql, segmentar
     };
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
