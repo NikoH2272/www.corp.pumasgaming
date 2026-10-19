@@ -39,16 +39,17 @@
   padding: 5rem 1.5rem 4rem;
   text-align: center;
   background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(216,195,149,.12) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 50% at 80% 80%, rgba(216,195,149,.07) 0%, transparent 55%),
-    linear-gradient(180deg, var(--cp-dark2) 0%, var(--cp-dark) 100%);
+    radial-gradient(ellipse 85% 65% at 50% -10%, rgba(216,195,149,.2) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 55% at 88% 90%, rgba(216,195,149,.09) 0%, transparent 50%),
+    radial-gradient(ellipse 35% 45% at 8% 85%, rgba(216,195,149,.06) 0%, transparent 45%),
+    linear-gradient(180deg, #0e0d0b 0%, var(--cp-dark) 100%);
   border-bottom: 1px solid var(--cp-line);
 }
 .cp-hero::before {
   content: '';
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background-image:
-    repeating-linear-gradient(135deg, transparent 0 68px, rgba(216,195,149,.03) 69px, transparent 70px 140px);
+  background-image: radial-gradient(circle, rgba(216,195,149,.07) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 .cp-hero-inner { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
 .cp-badge {
@@ -129,13 +130,16 @@
 
 .cp-mini-card {
   flex: 0 0 220px; scroll-snap-align: start;
-  background: linear-gradient(170deg, rgba(216,195,149,.05) 0%, rgba(0,0,0,.4) 100%), var(--cp-dark2);
+  background: rgba(255,255,255,.025);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
   border: 1px solid var(--cp-line);
-  border-radius: 12px; overflow: hidden;
+  border-radius: 14px; overflow: hidden;
   text-decoration: none; color: inherit;
-  transition: border-color .15s, transform .15s;
+  box-shadow: 0 2px 20px rgba(0,0,0,.35);
+  transition: border-color .18s, transform .18s, box-shadow .18s;
 }
-.cp-mini-card:hover { border-color: var(--cp-gold); transform: translateY(-2px); }
+.cp-mini-card:hover { border-color: var(--cp-gold); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,.45), 0 0 18px rgba(216,195,149,.07); }
 .cp-mini-banner {
   height: 90px; overflow: hidden; position: relative;
   background: linear-gradient(135deg, var(--cp-dark3), rgba(216,195,149,.1));

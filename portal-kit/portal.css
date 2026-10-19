@@ -108,16 +108,17 @@ body {
   overflow-x: hidden;
   color: var(--light);
   background:
-    radial-gradient(ellipse at 82% 4%, rgba(var(--primary-rgb), .09), transparent 28rem),
-    radial-gradient(ellipse at 8% 60%, rgba(var(--accent-rgb), .045), transparent 30rem),
-    linear-gradient(145deg, var(--bg-a) 0%, var(--bg-b) 52%, var(--bg-a) 100%);
+    radial-gradient(ellipse 75% 50% at 88% 0%, rgba(var(--primary-rgb), .16) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 65% at 8% 72%, rgba(var(--primary-rgb), .07) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 35% at 50% 115%, rgba(var(--accent-rgb), .06) 0%, transparent 50%),
+    var(--bg-a);
   font: 16px/1.55 var(--font-body);
 }
 
 body::before {
   position: fixed; z-index: -1; inset: 0; pointer-events: none; content: "";
-  opacity: .11;
-  background-image: repeating-linear-gradient(135deg, transparent 0 68px, rgba(244, 238, 220, .08) 69px, transparent 70px 140px);
+  background-image: radial-gradient(circle, rgba(var(--primary-rgb), .065) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 h1, h2, h3, .logo, .btn-access, .btn-generar, label, .pg-th {

@@ -344,7 +344,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     <div class="fg"><label>Fondo</label><div class="color-row"><input type="color" id="t-c-bg" oninput="$('t-c-bg-h').value=this.value"><input id="t-c-bg-h" maxlength="7" placeholder="#0A0A0A" oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))$('t-c-bg').value=this.value"></div></div>
                     <div class="fg"><label>URL Logo</label><input id="t-logo" placeholder="https://…"></div>
                   </div>
-                  <div class="fg"><label>URL Banner</label><input id="t-banner" placeholder="https://…"></div>
+                  <div class="fg"><label>URL Banner (horizontal)</label><input id="t-banner" placeholder="https://…"></div>
+                  <div class="fg"><label>Banner vertical / poster (URL)</label><input id="t-banner-v" placeholder="https://… (imagen vertical para Info)"></div>
+                  <!-- Sponsors -->
+                  <div class="fg">
+                    <label style="display:flex;align-items:center;justify-content:space-between">
+                      Patrocinadores
+                      <button type="button" class="btn btn-s btn-sm" onclick="trn.addSponsor()">+ Sponsor</button>
+                    </label>
+                    <div id="t-sponsors-list" style="display:flex;flex-direction:column;gap:.5rem;margin-top:.4rem"></div>
+                  </div>
                   <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="t-pub"><span class="toggle-track"></span></label><span style="font-size:.85rem">Visible al público</span></div>
                   <div class="btn-row">
                     <button type="submit" class="btn btn-g btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
@@ -935,6 +944,7 @@ const trn = (function(){
 
   // ── Cronograma ───────────────────────────────────────────────────────
   let cronograma = [];
+  let sponsors   = [];
   function renderCronograma(){
     const wrap=$('t-cronograma');
     if(!wrap)return;
@@ -993,6 +1003,8 @@ const trn = (function(){
     $('st-reg').innerHTML=regUrl?`<span class="ok"><i class="fa-solid fa-circle-check"></i> Reglamento cargado</span>`:'';
     $('t-logo').value=t.logo_url||'';
     $('t-banner').value=t.banner_url||'';
+    $('t-banner-v').value=t.config?.banner_vertical||'';
+    renderSponsors(t.config?.sponsors||[]);
     $('t-pub').checked=!!t.publico;
     const c=t.colores||{};
     ['pri','acc','bg'].forEach((k,i)=>{
@@ -1023,7 +1035,10 @@ const trn = (function(){
           pago:$('t-pago').checked, precio:getPrecioStr('t-precio-val','t-precio-mon'),
           metodo_pago:$('t-metodo').value.trim()||null,
           premio:$('t-premio').value.trim()||null,
-          reglamento_url:actual?.config?.reglamento_url||null
+          banner_vertical:$('t-banner-v').value.trim()||null,
+          reglamento_url:actual?.config?.reglamento_url||null,
+          sponsors:sponsors.length?sponsors:null,
+          resultados:actual?.config?.resultados||null
         },
         colores:{primary:$('t-c-pri-h').value,accent:$('t-c-acc-h').value,bg:$('t-c-bg-h').value}
       };
@@ -1528,6 +1543,31 @@ const trn = (function(){
     setTimeout(()=>{const el=$('t-cronograma');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},150);
   }
 
+  /* ── Sponsors ──────────────────────────────────────────────── */
+  function renderSponsors(arr){
+    sponsors=arr||[];
+    const el=$('t-sponsors-list');
+    if(!el)return;
+    el.innerHTML=sponsors.map((s,i)=>`
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.3rem;align-items:center">
+        <input value="${esc(s.nombre||'')}" placeholder="Nombre" oninput="trn.updSponsor(${i},'nombre',this.value)" style="font-size:.78rem">
+        <input value="${esc(s.logo_url||'')}" placeholder="Logo URL" oninput="trn.updSponsor(${i},'logo_url',this.value)" style="font-size:.78rem">
+        <input value="${esc(s.link_url||'')}" placeholder="Link URL" oninput="trn.updSponsor(${i},'link_url',this.value)" style="font-size:.78rem">
+        <button type="button" class="btn btn-s btn-sm" onclick="trn.delSponsor(${i})" style="padding:.2rem .5rem;color:#e07070">✕</button>
+      </div>`).join('');
+  }
+  function addSponsor(){
+    sponsors.push({nombre:'',logo_url:'',link_url:''});
+    renderSponsors(sponsors);
+  }
+  function delSponsor(i){
+    sponsors.splice(i,1);
+    renderSponsors(sponsors);
+  }
+  function updSponsor(i,key,val){
+    if(sponsors[i]) sponsors[i][key]=val;
+  }
+
   return {cargar,select,nuevo,cancelarQuick,quickCreate,borrar,guardar,tab,togglePago,
     editarEq,resetEq,guardarEq,borrarEq,
     editarPt,resetPt,guardarPt,borrarPt,subirLog,
@@ -1535,7 +1575,8 @@ const trn = (function(){
     importarEquipos,irCronograma,
     subirReglamento,verReglamento,borrarReglamento,
     addFase,delFase,selFase,addGrupoRes,delGrupoResConf,updGrupoRes,refreshGrupoRes,
-    addFilaRes,delFilaRes,updFilaRes,toggleResGeneral,resBulkLoad,guardarResData};
+    addFilaRes,delFilaRes,updFilaRes,toggleResGeneral,resBulkLoad,guardarResData,
+    renderSponsors,addSponsor,delSponsor,updSponsor};
 })();
 
 // ═══════════════════ RELAMPAGOS ══════════════════════════════════════
