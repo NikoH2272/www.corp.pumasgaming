@@ -120,6 +120,9 @@ body { background: var(--bg-a); }
 
 /* descripción */
 .trn-desc { color: var(--gray); line-height: 1.7; font-size: .88rem; white-space: pre-wrap; }
+.tz-b { font-size: .64rem; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 4px; padding: 1px 6px; white-space: nowrap; font-family: 'Michroma', sans-serif; }
+.tz-b b { color: var(--primary, #D8C395); font-weight: 700; margin-right: 3px; }
+.tz-b small { opacity: .7; font-size: .6rem; }
 
 /* back link */
 .trn-back { display: inline-flex; align-items: center; gap: .4rem; color: var(--t4); font-size: .8rem; text-decoration: none; padding: .8rem 1rem; transition: color .15s; }
@@ -226,7 +229,19 @@ body { background: var(--bg-a); }
   const JUEGOS = { free_fire:'Free Fire', cod:'Call of Duty', valorant:'Valorant', fortnite:'Fortnite', minecraft:'Minecraft' };
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function fmtFecha(iso) { if (!iso) return null; return new Date(iso).toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}); }
+  function fmtFecha(iso) { if (!iso) return null; return new Date(iso).toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric',timeZone:'America/Bogota'}); }
+  function fmtHoraCOL(iso){if(!iso)return '';const d=new Date(iso);return d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Bogota'});}
+  function fmtZonasBadges(iso){
+    if(!iso)return '';
+    const d=new Date(iso);if(isNaN(d))return '';
+    const t=tz=>d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz});
+    const fd=tz=>d.toLocaleDateString('es',{day:'2-digit',month:'short',timeZone:tz});
+    const dCol=fd('America/Bogota'),dMex=fd('America/Mexico_City'),dArg=fd('America/Argentina/Buenos_Aires');
+    const sMex=dMex!==dCol?`<small> ${dMex}</small>`:'',sArg=dArg!==dCol?`<small> ${dArg}</small>`:'';
+    return `<span class="tz-b"><b>COL</b>${t('America/Bogota')}</span>`+
+           `<span class="tz-b"><b>MEX</b>${t('America/Mexico_City')}${sMex}</span>`+
+           `<span class="tz-b"><b>ARG</b>${t('America/Argentina/Buenos_Aires')}${sArg}</span>`;
+  }
 
   /* ── Aplicar colores del torneo ────────────────────────────── */
   function aplicarColores(colores) {
@@ -314,23 +329,47 @@ body { background: var(--bg-a); }
   function renderInfo() {
     const t = TORNEO;
     const c = t.config || {};
-    const fi = fmtFecha(t.fecha_inicio), ff = fmtFecha(t.fecha_fin);
     let rows = [];
-    if (t.juego)         rows.push(['Juego',      JUEGOS[t.juego]||t.juego]);
-    if (fi)              rows.push(['Inicio',      fi]);
-    if (ff)              rows.push(['Fin',         ff]);
-    if (c.formato)       rows.push(['Formato',     c.formato]);
-    if (c.grupos)        rows.push(['Grupos',      c.grupos]);
-    if (c.rondas)        rows.push(['Rondas',      c.rondas]);
-    if (c.max_equipos)   rows.push(['Cupos',       c.max_equipos]);
-    if (c.puntos_kill)   rows.push(['Ptos/kill',   c.puntos_kill]);
-    const tabla = rows.length ? `<table style="width:100%;border-collapse:collapse;font-size:.85rem;margin-bottom:1.5rem">
+    if (t.juego)              rows.push(['Juego',        JUEGOS[t.juego]||t.juego]);
+    if (c.fecha_texto)        rows.push(['Inicio aprox.',c.fecha_texto]);
+    if (c.formato_equipos)    rows.push(['Formato',      `Grupos de ${c.formato_equipos} equipos`]);
+    else if (c.formato)       rows.push(['Formato',      c.formato]);
+    if (c.grupos)             rows.push(['Grupos',       c.grupos]);
+    if (c.rondas)             rows.push(['Rondas',       c.rondas]);
+    if (c.max_equipos)        rows.push(['Cupos',        c.max_equipos]);
+    if (c.puntos_kill)        rows.push(['Ptos/kill',    c.puntos_kill]);
+
+    const tabla = rows.length ? `<table style="width:100%;border-collapse:collapse;font-size:.85rem;margin-bottom:1.2rem">
       ${rows.map(([k,v]) => `<tr style="border-bottom:1px solid rgba(255,255,255,.07)">
-        <td style="padding:.55rem .6rem;color:var(--gray);width:40%">${esc(k)}</td>
-        <td style="padding:.55rem .6rem;color:var(--light,#e8e0d0);font-weight:600">${esc(String(v))}</td>
+        <td style="padding:.5rem .6rem;color:var(--gray);width:38%">${esc(k)}</td>
+        <td style="padding:.5rem .6rem;color:var(--light,#e8e0d0);font-weight:600">${esc(String(v))}</td>
       </tr>`).join('')}
     </table>` : '';
-    document.getElementById('contenido-info').innerHTML = tabla +
+
+    // Cronograma de grupos
+    let crono = '';
+    if (Array.isArray(c.cronograma) && c.cronograma.length) {
+      crono = `<div style="margin-bottom:1.2rem">
+        <div style="font:.7rem 'Michroma',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--primary,#D8C395);margin-bottom:.6rem">
+          <i class="fa-regular fa-calendar-days" style="margin-right:.4rem"></i>Cronograma
+        </div>
+        ${c.cronograma.map(g=>`
+          <div style="border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:.65rem .8rem;margin-bottom:.45rem;background:rgba(255,255,255,.03)">
+            <div style="font:.72rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--light,#e8e0d0);margin-bottom:${g.fecha?'4px':'0'}">
+              ${esc(g.grupo||'Grupo')}
+            </div>
+            ${g.fecha?`
+              <div style="font-size:.82rem;color:var(--gray);margin-bottom:3px">
+                <i class="fa-regular fa-clock" style="margin-right:4px;color:var(--primary-a,#B8A875)"></i>
+                ${fmtFecha(g.fecha)} · ${fmtHoraCOL(g.fecha)} COL
+              </div>
+              <div style="display:flex;gap:.3rem;flex-wrap:wrap">${fmtZonasBadges(g.fecha)}</div>
+            `:'<div style="font-size:.76rem;color:var(--gray)">Fecha por confirmar</div>'}
+          </div>`).join('')}
+      </div>`;
+    }
+
+    document.getElementById('contenido-info').innerHTML = tabla + crono +
       (t.descripcion ? `<div class="trn-desc">${esc(t.descripcion)}</div>` : '');
   }
 
@@ -366,8 +405,8 @@ body { background: var(--bg-a); }
       const sub = [];
       const juego = JUEGOS[TORNEO.juego] || TORNEO.juego;
       if (juego) sub.push(`<span><i class="fa-solid fa-gamepad"></i>${esc(juego)}</span>`);
-      const fi = fmtFecha(TORNEO.fecha_inicio), ff = fmtFecha(TORNEO.fecha_fin);
-      if (fi) sub.push(`<span><i class="fa-regular fa-calendar"></i>${esc(fi)}${ff?' – '+esc(ff):''}</span>`);
+      const fechaTxt = TORNEO.config?.fecha_texto;
+      if (fechaTxt) sub.push(`<span><i class="fa-regular fa-calendar"></i>${esc(fechaTxt)}</span>`);
       if (TORNEO.portal && P.PORTALES[TORNEO.portal]) {
         sub.push(`<span><i class="fa-solid fa-link"></i>${esc(P.PORTALES[TORNEO.portal].nombre)}</span>`);
       }

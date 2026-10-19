@@ -245,11 +245,30 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     </div>
                   </div>
                   <div class="fg2">
-                    <div class="fg"><label>Fecha inicio</label><input type="datetime-local" id="t-fi"><div class="tz-hint" id="t-fi-tz"></div></div>
-                    <div class="fg"><label>Fecha fin</label><input type="datetime-local" id="t-ff"><div class="tz-hint" id="t-ff-tz"></div></div>
+                    <div class="fg"><label>Inicio aprox. (texto)</label><input id="t-fecha-txt" placeholder="Ej: Enero 2027"></div>
+                    <div class="fg"><label>Formato de grupos</label>
+                      <select id="t-formato-eq">
+                        <option value="12">Grupos de 12 equipos</option>
+                        <option value="15">Grupos de 15 equipos</option>
+                        <option value="custom">Personalizado</option>
+                      </select>
+                    </div>
+                  </div>
+                  <!-- Cronograma -->
+                  <div class="fg">
+                    <label style="display:flex;align-items:center;justify-content:space-between">
+                      Cronograma de grupos
+                      <button type="button" onclick="trn.addGrupo()" class="btn btn-s btn-sm" style="font-size:.65rem;padding:.25rem .65rem">
+                        <i class="fa-solid fa-plus"></i> Grupo
+                      </button>
+                    </label>
+                    <div id="t-cronograma" style="display:flex;flex-direction:column;gap:7px;margin-top:8px"></div>
                   </div>
                   <div class="fg2">
-                    <div class="fg"><label>Fecha aprox. inicio (texto)</label><input id="t-fecha-txt" placeholder="Ej: Enero 2027"></div>
+                    <div class="fg" style="display:none"><label>_fi</label><input type="datetime-local" id="t-fi"><div class="tz-hint" id="t-fi-tz"></div></div>
+                    <div class="fg" style="display:none"><label>_ff</label><input type="datetime-local" id="t-ff"><div class="tz-hint" id="t-ff-tz"></div></div>
+                  </div>
+                  <div class="fg2">
                     <div class="fg"><label>Estado</label>
                       <select id="t-estado">
                         <option value="borrador">Borrador</option><option value="inscripciones">Inscripciones</option>
@@ -812,13 +831,50 @@ const trn = (function(){
     tabById('info');
   }
 
+  // ── Cronograma ───────────────────────────────────────────────────────
+  let cronograma = [];
+  function renderCronograma(){
+    const wrap=$('t-cronograma');
+    if(!wrap)return;
+    if(!cronograma.length){wrap.innerHTML='<div style="color:var(--gray);font-size:.78rem">Sin grupos aún — pulsa + Grupo</div>';return;}
+    wrap.innerHTML=cronograma.map((g,i)=>`
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:start">
+        <input placeholder="Ej: Grupo 1" value="${esc(g.grupo||'')}" oninput="trn.updGrupo(${i},'grupo',this.value)">
+        <div>
+          <input type="datetime-local" value="${g.fecha?toLocal(g.fecha):''}"
+            oninput="trn.updGrupo(${i},'fecha',this.value)" onchange="trn.updGrupo(${i},'fecha',this.value)">
+          <div class="tz-hint">${fmtZonas(g.fecha||'')}</div>
+        </div>
+        <button type="button" class="btn btn-s btn-sm" onclick="trn.delGrupo(${i})" title="Quitar" style="margin-top:2px;padding:.3rem .55rem"><i class="fa-solid fa-trash-can"></i></button>
+      </div>`).join('');
+  }
+  function addGrupo(){
+    cronograma.push({grupo:`Grupo ${cronograma.length+1}`,fecha:null});
+    renderCronograma();
+  }
+  function delGrupo(i){cronograma.splice(i,1);renderCronograma();}
+  function updGrupo(i,key,val){
+    if(!cronograma[i])return;
+    if(key==='fecha'){
+      const iso=val?new Date(val).toISOString():null;
+      cronograma[i].fecha=iso;
+      // actualizar hint inline
+      const wraps=$('t-cronograma').querySelectorAll('.tz-hint');
+      if(wraps[i]) wraps[i].innerHTML=fmtZonas(iso||'');
+    } else {
+      cronograma[i][key]=val;
+    }
+  }
+
   function cargarInfo(){
     const t=actual;
     $('t-nombre').value=t.nombre||'';
     $('t-juego').value=t.juego||'free_fire';
-    $('t-fi').value=toLocal(t.fecha_inicio); $('t-fi-tz').innerHTML=fmtZonas(t.fecha_inicio||'');
-    $('t-ff').value=toLocal(t.fecha_fin);    $('t-ff-tz').innerHTML=fmtZonas(t.fecha_fin||'');
     $('t-fecha-txt').value=t.config?.fecha_texto||'';
+    const fmtVal=t.config?.formato_equipos?String(t.config.formato_equipos):'12';
+    $('t-formato-eq').value=['12','15'].includes(fmtVal)?fmtVal:'custom';
+    cronograma=Array.isArray(t.config?.cronograma)?t.config.cronograma.map(g=>({grupo:g.grupo||'',fecha:g.fecha||null})):[];
+    renderCronograma();
     $('t-estado').value=t.estado||'borrador';
     $('t-cupos').value=t.config?.max_equipos||'';
     $('t-n-eq').value=t.config?.n_equipos||'';
@@ -845,10 +901,9 @@ const trn = (function(){
     e.preventDefault();
     st('st-trn-info','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
     try{
+      const fmtSel=$('t-formato-eq').value;
       const d={
         id:actual?.id??null, nombre:$('t-nombre').value.trim(), juego:$('t-juego').value,
-        fechaInicio:$('t-fi').value?new Date($('t-fi').value).toISOString():null,
-        fechaFin:$('t-ff').value?new Date($('t-ff').value).toISOString():null,
         estado:$('t-estado').value, descripcion:$('t-desc').value.trim()||null,
         logoUrl:$('t-logo').value.trim()||null, bannerUrl:$('t-banner').value.trim()||null,
         publico:$('t-pub').checked,
@@ -856,6 +911,8 @@ const trn = (function(){
           max_equipos:$('t-cupos').value?parseInt($('t-cupos').value):null,
           n_equipos:$('t-n-eq').value?parseInt($('t-n-eq').value):null,
           fecha_texto:$('t-fecha-txt').value.trim()||null,
+          formato_equipos:fmtSel!=='custom'?parseInt(fmtSel):null,
+          cronograma:cronograma.filter(g=>g.grupo||g.fecha),
           pago:$('t-pago').checked, precio:getPrecioStr('t-precio-val','t-precio-mon'),
           metodo_pago:$('t-metodo').value.trim()||null
         },
@@ -1192,7 +1249,7 @@ const rmp = (function(){
     catch(e){alert('Error: '+(e.message||''));}
   }
 
-  return{cargar,select,nuevo,borrar,guardar,tab,togglePago,editarEq,resetEq,guardarEq,borrarEq};
+  return{cargar,select,nuevo,borrar,guardar,tab,togglePago,editarEq,resetEq,guardarEq,borrarEq,addGrupo,delGrupo,updGrupo};
 })();
 
 // ═══════════════════ ALIADOS ═════════════════════════════════════════
