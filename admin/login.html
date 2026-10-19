@@ -156,6 +156,13 @@ input[type=password]{letter-spacing:.06em}
 /* ── SPINNER ── */
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin .7s linear infinite}
+
+/* footer inyectado por portal.js — sacarlo del flujo flex */
+footer,.pg-creditos-wrap{
+  position:fixed;bottom:.8rem;left:0;right:0;
+  text-align:center;pointer-events:none;z-index:10;
+}
+.pg-creditos{font-size:.72rem;color:var(--gray);pointer-events:auto}
 </style>
 </head>
 <body>
@@ -196,6 +203,7 @@ input[type=password]{letter-spacing:.06em}
 </div>
 
 <script>
+const P = window.PumasPortal;
 const $ = id => document.getElementById(id);
 
 function st(tipo, msg) {
