@@ -89,7 +89,7 @@ CREATE POLICY "relampagos_pub_read"  ON corp_relampagos        FOR SELECT USING 
 CREATE POLICY "relampago_eq_pub"     ON corp_relampago_equipos FOR SELECT USING (
   relampago_id IN (SELECT id FROM corp_relampagos WHERE publico = true)
 );
-CREATE POLICY "eventos_pub_read"     ON corp_events_aliados    FOR SELECT USING (activo = true);
+CREATE POLICY "eventos_pub_read"     ON corp_eventos_aliados   FOR SELECT USING (activo = true);
 CREATE POLICY "subpag_pub_read"      ON corp_subpaginas        FOR SELECT USING (activo = true);
 
 -- Escritura con clave anon (la autenticación la gestiona el admin a nivel de app)

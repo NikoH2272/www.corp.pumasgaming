@@ -390,6 +390,7 @@
       <li><a href="#calendario"    onclick="closeMenu()">Calendario</a></li>
       <li><a href="#inscripciones" onclick="closeMenu()">Inscripciones</a></li>
       <li><a href="#actividades"   onclick="closeMenu()">Actividades</a></li>
+      <li><a href="#relampagos"    onclick="closeMenu()">Relampagos</a></li>
       <li><a href="#comunicacion"  onclick="closeMenu()">Comunidad</a></li>
       <li><a href="/"              onclick="closeMenu()">Inicio</a></li>
     </ul>
@@ -495,6 +496,21 @@
     <div class="cp-activities" id="cp-activities"></div>
   </section>
 
+  <!-- ── RELAMPAGOS ────────────────────────────────────────────────── -->
+  <section class="cp-section" id="relampagos">
+    <div class="cp-section-head">
+      <div class="cp-section-title">
+        <i class="fa-solid fa-bolt"></i> Relampagos
+      </div>
+      <a href="relampagos.html" style="font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cp-gold);opacity:.8;display:flex;align-items:center;gap:.3rem;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.8">
+        Ver todos <i class="fa-solid fa-arrow-right" style="font-size:.7rem"></i>
+      </a>
+    </div>
+    <div id="cp-relampagos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin-top:.5rem">
+      <div class="cp-spinner"><i class="fa-solid fa-circle-notch"></i> Cargando…</div>
+    </div>
+  </section>
+
   <!-- ── COMUNICACIÓN ───────────────────────────────────────────────── -->
   <section class="cp-section" id="comunicacion">
     <div class="cp-section-head">
@@ -544,6 +560,8 @@
 
   let ACTIVIDADES = leerStorage(CORP_KEY_ACT, DEFAULT_ACTIVIDADES);
   let CANALES     = leerStorage(CORP_KEY_CH,  DEFAULT_CANALES);
+  let RELAMPAGOS  = [];
+  let ALIADOS     = [];
 
   const JUEGOS = { free_fire:'Free Fire', cod:'Call of Duty', valorant:'Valorant', fortnite:'Fortnite', minecraft:'Minecraft' };
   let TODOS = [];
@@ -558,9 +576,14 @@
 
   async function cargar() {
     try {
-      const data = await P.torneos.publico(null);
+      const data = await P.torneos.publico('torneos');
       TODOS = Array.isArray(data) ? data.filter(t => t.publico !== false && t.estado !== 'borrador') : [];
     } catch { TODOS = []; }
+    // Cargar relampagos y aliados desde DB en paralelo
+    Promise.all([
+      P.relampagos ? P.relampagos.listar().then(r=>{RELAMPAGOS=r||[];renderRelampagos();}).catch(()=>{}) : Promise.resolve(),
+      P.eventosAliados ? P.eventosAliados.listar().then(a=>{if(a&&a.length){ACTIVIDADES=a.map(x=>({id:x.id,nombre:x.nombre,tipo:x.es_gratis?'gratis':'pago',precio:x.costo||'',descripcion:x.descripcion||'',juego:x.juego||'',icono:'bolt',link:x.discord||x.whatsapp||'#'}));} renderActividades('todas');}).catch(()=>{renderActividades('todas');}) : Promise.resolve()
+    ]);
     renderStats(); renderCarousel(); renderInscripciones();
     renderPremium(); renderCalendar(); renderActividades('todas'); renderCanales();
   }
@@ -749,6 +772,29 @@
     btn.classList.add('activo');
     renderActividades(filtro);
   };
+
+  function renderRelampagos() {
+    const wrap = document.getElementById('cp-relampagos');
+    if (!wrap) return;
+    if (!RELAMPAGOS.length) {
+      wrap.innerHTML = '<div class="cp-vacio"><i class="fa-solid fa-bolt"></i>No hay relampagos activos por ahora.</div>';
+      return;
+    }
+    const ESTADO_L = {activo:'Activo',en_juego:'En juego',finalizado:'Finalizado'};
+    const ESTADO_C = {activo:'chip-activo',en_juego:'chip-en_juego',finalizado:'chip-finalizado'};
+    wrap.innerHTML = RELAMPAGOS.slice(0,4).map(r => `
+      <a href="relampagos.html?id=${r.id}" class="cp-card" style="text-decoration:none;background:var(--cp-dark2);border:1px solid var(--cp-line);border-radius:8px;overflow:hidden;transition:transform .18s,border-color .18s;display:flex;flex-direction:column">
+        ${r.banner_url ? `<img src="${esc(r.banner_url)}" alt="${esc(r.nombre)}" style="width:100%;height:100px;object-fit:cover;background:var(--cp-dark3)">` : `<div style="height:100px;background:var(--cp-dark3);display:flex;align-items:center;justify-content:center;color:var(--cp-gray)"><i class="fa-solid fa-bolt" style="font-size:2rem;opacity:.15"></i></div>`}
+        <div style="padding:.8rem 1rem;flex:1;display:flex;flex-direction:column;gap:.3rem">
+          <div style="font-family:'Michroma',sans-serif;font-size:.88rem;color:var(--cp-gold)">${esc(r.nombre)}</div>
+          <div style="font-size:.78rem;color:var(--cp-gray);display:flex;flex-wrap:wrap;gap:.4rem;margin-top:auto;padding-top:.3rem">
+            <span style="display:inline-block;padding:.15rem .5rem;border-radius:20px;font:.63rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase;${r.estado==='activo'?'background:rgba(110,231,168,.12);color:#6ee7a8;border:1px solid rgba(110,231,168,.3)':r.estado==='en_juego'?'background:rgba(255,198,89,.12);color:#FFD54A;border:1px solid rgba(255,198,89,.3)':'background:rgba(216,195,149,.1);color:#D8C395;border:1px solid rgba(216,195,149,.25)'}">${ESTADO_L[r.estado]||r.estado}</span>
+            <span style="display:inline-block;padding:.15rem .5rem;border-radius:20px;font:.63rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.05em;text-transform:uppercase;${r.es_gratis?'background:rgba(110,231,168,.1);color:#6ee7a8;border:1px solid rgba(110,231,168,.3)':'background:rgba(216,195,149,.1);color:#D8C395;border:1px solid rgba(216,195,149,.25)'}">${r.es_gratis?'Gratis':r.costo||'De pago'}</span>
+            ${r.premio ? `<span style="color:var(--cp-gold);font-family:'Michroma',sans-serif;font-size:.7rem"><i class="fa-solid fa-trophy" style="margin-right:3px;opacity:.7"></i>${esc(r.premio)}</span>` : ''}
+          </div>
+        </div>
+      </a>`).join('');
+  }
 
   function renderActividades(filtro) {
     const lista = filtro === 'todas' ? ACTIVIDADES : ACTIVIDADES.filter(a => a.tipo === filtro);

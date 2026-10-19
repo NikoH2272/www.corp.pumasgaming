@@ -5,810 +5,1485 @@
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-C79JND219Y');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Torneos Admin | Pumas Corp</title>
+<title>Corp Admin | Pumas Gaming</title>
 <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="icon" href="../imagenes/LOGO PUMAS WEB.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../portal-kit/portal.js?v=20261015" data-sin-efecto></script>
+<script src="../portal-kit/portal.js?v=20261019" data-portal="torneos" data-sin-efecto></script>
 <style>
 :root {
-  --tz-gold: #ffc659; --tz-gold2: #ebe070;
-  --tz-blue: #003772; --tz-teal: #008485; --tz-green: #24d6a5;
-  --tz-bg:   #011a3a; --tz-bg2:  #002255; --tz-bg3: #002a60;
-  --tz-line: rgba(0,132,133,.4);
-  --tz-text: #d6eaff; --tz-gray: #5a84ad;
+  --g:   #D8C395; --g2: #F4EEDC; --ga: #B8A875;
+  --b:   #0A0A0A; --b2: #141414; --b3: #1E1E1E; --b4: #282828;
+  --ln:  rgba(216,195,149,.18);
+  --tx:  #F4EEDC; --gray: #7A7060;
+  --ok:  #6ee7a8; --err: #ff8a8d; --warn: #FFD54A;
 }
-*{box-sizing:border-box}
-body{background:var(--tz-bg);color:var(--tz-text);font-family:'Segoe UI',sans-serif;font-size:.9rem;margin:0;visibility:visible!important}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--b);color:var(--tx);font:15px/1.5 'Segoe UI',sans-serif;min-height:100dvh;visibility:visible!important}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit}
+input,select,textarea{background:#0d0d0d;border:1px solid var(--ln);color:var(--tx);border-radius:4px;padding:8px 10px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--g)}
+input[type=color]{padding:2px;height:36px;cursor:pointer;width:36px}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--g);cursor:pointer}
+textarea{min-height:80px;resize:vertical}
+input[type=date],input[type=datetime-local]{color-scheme:dark}
+select option{background:#111}
+label{display:block;margin-bottom:5px;color:var(--g);font:700 .7rem 'Michroma',sans-serif;letter-spacing:.08em;text-transform:uppercase}
 
-.tz-wrap{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
-.tz-header{display:flex;align-items:center;gap:12px;padding:1rem 0 1.4rem;border-bottom:1px solid var(--tz-line);margin-bottom:1.4rem}
-.tz-header h1{font-family:'Michroma',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--tz-gold);margin:0;text-transform:uppercase;flex:1}
+/* ── LOGIN ── */
+#ad-login{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:1.5rem;background:var(--b)}
+.ad-login-box{width:min(100%,380px);padding:2.2rem 2rem;background:var(--b2);border:1px solid var(--ln);border-top:3px solid var(--g);border-radius:8px}
+.ad-login-box h2{font-family:'Michroma',sans-serif;color:var(--g);font-size:.95rem;letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:1.6rem}
+.ad-login-box .fg{margin-bottom:14px}
 
-.tz-grid{display:grid;grid-template-columns:280px 1fr;gap:1.2rem;align-items:start}
-@media(max-width:760px){.tz-grid{grid-template-columns:1fr}}
+/* ── LAYOUT ── */
+#ad-app{display:none}
+.ad-wrap{display:flex;min-height:100dvh}
+.ad-side{width:220px;flex-shrink:0;background:var(--b2);border-right:1px solid var(--ln);display:flex;flex-direction:column;position:sticky;top:0;height:100dvh;overflow-y:auto}
+.ad-side-head{padding:1.1rem 1rem .8rem;border-bottom:1px solid var(--ln)}
+.ad-side-head h1{font-family:'Michroma',sans-serif;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--g);display:flex;align-items:center;gap:.5rem}
+.ad-side-head small{color:var(--gray);font-size:.68rem;margin-top:2px;display:block}
+.ad-nav{list-style:none;padding:.5rem 0;flex:1}
+.ad-nav li a{display:flex;align-items:center;gap:.65rem;padding:.65rem 1.1rem;font:700 .78rem 'Michroma',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--gray);transition:all .15s;border-left:3px solid transparent}
+.ad-nav li a i{width:18px;text-align:center;flex-shrink:0}
+.ad-nav li a:hover{color:var(--tx);background:rgba(216,195,149,.06)}
+.ad-nav li a.on{color:var(--g);background:rgba(216,195,149,.09);border-left-color:var(--g)}
+.ad-side-foot{padding:.8rem 1rem;border-top:1px solid var(--ln);display:flex;gap:.5rem;flex-wrap:wrap}
+.ad-main{flex:1;min-width:0;padding:1.4rem;overflow-y:auto}
+.ad-section{display:none}.ad-section.on{display:block}
 
-.tz-panel{background:var(--tz-bg2);border:1px solid var(--tz-line);border-radius:10px;overflow:hidden}
-.tz-panel-head{display:flex;align-items:center;gap:8px;padding:12px 14px;background:rgba(0,132,133,.12);border-bottom:1px solid var(--tz-line)}
-.tz-panel-head h3{flex:1;margin:0;font-family:'Michroma',sans-serif;font-size:.78rem;letter-spacing:.1em;color:var(--tz-teal);text-transform:uppercase}
-.tz-lista{list-style:none;margin:0;padding:0;max-height:60vh;overflow-y:auto}
-.tz-lista li{padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(0,132,133,.15);display:flex;align-items:center;gap:8px;transition:background .12s}
-.tz-lista li:hover{background:rgba(0,55,114,.35)}
-.tz-lista li.activo{background:rgba(255,198,89,.1);border-left:3px solid var(--tz-gold)}
-.tz-lista li .tz-li-nombre{flex:1;font-weight:600;font-size:.85rem;color:var(--tz-text)}
-.tz-lista li .tz-li-estado{font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .45rem;border-radius:20px}
-.tz-empty{padding:1.2rem;text-align:center;color:var(--tz-gray);font-size:.82rem}
+/* ── BOTONES ── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:5px;font:.78rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .15s;border:1.5px solid transparent;white-space:nowrap}
+.btn-g{background:var(--g);color:#0A0A0A;border-color:var(--g)}.btn-g:hover{background:transparent;color:var(--g)}
+.btn-s{background:rgba(216,195,149,.08);color:var(--g);border-color:rgba(216,195,149,.3)}.btn-s:hover{background:rgba(216,195,149,.18)}
+.btn-r{background:rgba(255,80,80,.1);color:#ff8a8d;border-color:rgba(255,80,80,.3)}.btn-r:hover{background:rgba(255,80,80,.22)}
+.btn-sm{padding:.3rem .75rem;font-size:.7rem}
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+button:disabled{opacity:.5;cursor:not-allowed}
 
-.tz-editor{background:var(--tz-bg2);border:1px solid var(--tz-line);border-radius:10px;overflow:hidden}
-.tz-editor-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(0,132,133,.12);border-bottom:1px solid var(--tz-line)}
-.tz-editor-head h2{flex:1;margin:0;font-family:'Michroma',sans-serif;font-size:.82rem;letter-spacing:.1em;color:var(--tz-gold);text-transform:uppercase}
+/* ── PANELES / CARDS ── */
+.panel{background:var(--b2);border:1px solid var(--ln);border-radius:8px;overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:.7rem;padding:.9rem 1.1rem;background:rgba(216,195,149,.05);border-bottom:1px solid var(--ln)}
+.panel-head h3{flex:1;font-family:'Michroma',sans-serif;font-size:.78rem;letter-spacing:.1em;color:var(--g);text-transform:uppercase}
+.panel-body{padding:1rem 1.1rem}
 
-.tz-tabs{display:flex;border-bottom:1px solid var(--tz-line);background:var(--tz-bg2)}
-.tz-tab{padding:.75rem 1rem;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--tz-gray);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap}
-.tz-tab:hover{color:var(--tz-text)}
-.tz-tab.activo{color:var(--tz-gold);border-bottom-color:var(--tz-gold)}
-.tz-tab-panel{display:none;padding:1.2rem 1.4rem}
-.tz-tab-panel.activo{display:block}
+/* ── FORMULARIOS ── */
+.fg{margin-bottom:12px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fg2.t3{grid-template-columns:1fr 1fr 1fr}
+.color-row{display:flex;gap:8px;align-items:center}.color-row input:last-child{flex:1}
+.price-row{display:flex;gap:6px;align-items:center}.price-row select{width:80px;flex-shrink:0}.price-row input{flex:1}
+.toggle-wrap{display:flex;align-items:center;gap:10px;margin:4px 0}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.1);cursor:pointer;transition:background .2s}
+.toggle input:checked~.toggle-track{background:var(--g)}
+.toggle-track::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;top:3px;left:3px;background:#fff;transition:transform .2s}
+.toggle input:checked~.toggle-track::after{transform:translateX(20px)}
 
-.tz-form{display:flex;flex-direction:column;gap:10px}
-.tz-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.tz-form-row{grid-template-columns:1fr}}
-.tz-label{font-size:.72rem;color:var(--tz-gray);font-family:'Michroma',sans-serif;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
-.tz-input,.tz-select2,.tz-textarea{background:rgba(0,42,96,.6);border:1px solid var(--tz-line);color:var(--tz-text);border-radius:6px;padding:8px 10px;font:inherit;font-size:.88rem;outline:none;width:100%}
-.tz-input:focus,.tz-select2:focus,.tz-textarea:focus{border-color:var(--tz-gold)}
-.tz-textarea{resize:vertical;min-height:70px}
-.tz-color-row{display:flex;gap:8px;align-items:center}
-.tz-color-row input[type=color]{width:36px;height:32px;padding:2px;border-radius:5px;border:1px solid var(--tz-line);background:var(--tz-bg3);cursor:pointer}
-.tz-color-row .tz-input{flex:1}
-.tz-toggle-wrap{display:flex;align-items:center;gap:10px}
-.tz-toggle{position:relative;width:44px;height:24px;flex-shrink:0}
-.tz-toggle input{opacity:0;width:0;height:0}
-.tz-toggle-track{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.12);cursor:pointer;transition:background .2s}
-.tz-toggle input:checked~.tz-toggle-track{background:var(--tz-green)}
-.tz-toggle-track::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;top:3px;left:3px;background:#fff;transition:transform .2s}
-.tz-toggle input:checked~.tz-toggle-track::after{transform:translateX(20px)}
+/* ── STATUS ── */
+.st{font-size:.78rem;padding:.35rem .7rem;border-radius:4px;margin-top:.5rem;display:none}
+.st.ok {background:rgba(110,231,168,.12);color:var(--ok);border:1px solid rgba(110,231,168,.3);display:block}
+.st.err{background:rgba(255,138,141,.1);color:var(--err);border:1px solid rgba(255,138,141,.3);display:block}
 
-.tz-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;border-radius:7px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;border:1.5px solid transparent;text-decoration:none}
-.tz-btn-pri{background:linear-gradient(135deg,#008485,#24d6a5);color:#011a3a;border-color:#24d6a5;font-weight:700}
-.tz-btn-pri:hover{filter:brightness(1.1)}
-.tz-btn-sec{background:rgba(0,132,133,.15);color:var(--tz-teal);border-color:var(--tz-teal)}
-.tz-btn-sec:hover{background:rgba(0,132,133,.3)}
-.tz-btn-red{background:rgba(255,77,77,.12);color:#ff7070;border-color:rgba(255,77,77,.35)}
-.tz-btn-red:hover{background:rgba(255,77,77,.25)}
-.tz-btn-sm{padding:.3rem .75rem;font-size:.76rem}
-.tz-btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+/* ── TABLA ── */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--ln);border-radius:6px;margin-top:.7rem}
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem;min-width:520px}
+.tbl th{padding:9px 10px;border-bottom:1px solid var(--ln);color:var(--g);font-family:'Michroma',sans-serif;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;text-align:left;background:rgba(216,195,149,.04)}
+.tbl td{padding:9px 10px;border-bottom:1px solid rgba(216,195,149,.08);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(216,195,149,.04)}
+.tbl .del{background:none;border:none;color:var(--err);cursor:pointer;padding:3px 7px;border-radius:3px;font-size:.82rem;opacity:.7;transition:all .15s}
+.tbl .del:hover{opacity:1;background:rgba(255,80,80,.12)}
 
-.tz-table{width:100%;border-collapse:collapse;font-size:.83rem}
-.tz-table th{color:var(--tz-teal);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:7px 8px;border-bottom:1px solid var(--tz-line);text-align:left}
-.tz-table td{padding:7px 8px;border-bottom:1px solid rgba(0,132,133,.15);vertical-align:middle}
-.tz-table tr:hover td{background:rgba(0,55,114,.3)}
-.tz-table-wrap{border:1px solid var(--tz-line);border-radius:8px;overflow:hidden;margin-top:.6rem}
-.tz-del-btn{background:none;border:none;color:#ff7070;cursor:pointer;padding:3px 7px;border-radius:4px;font-size:.82rem;opacity:.7;transition:all .15s}
-.tz-del-btn:hover{opacity:1;background:rgba(255,77,77,.15)}
+/* ── CHIPS / BADGES ── */
+.chip{display:inline-block;padding:.15rem .5rem;border-radius:20px;font:700 .63rem 'Michroma',sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.chip-activo   {background:rgba(110,231,168,.12);color:var(--ok);border:1px solid rgba(110,231,168,.3)}
+.chip-en_juego {background:rgba(255,198,89,.12); color:var(--warn);border:1px solid rgba(255,198,89,.3)}
+.chip-finalizado{background:rgba(216,195,149,.1);color:var(--g);border:1px solid rgba(216,195,149,.25)}
+.chip-inscripciones{background:rgba(110,231,168,.12);color:var(--ok);border:1px solid rgba(110,231,168,.3)}
+.chip-en_curso {background:rgba(255,198,89,.12); color:var(--warn);border:1px solid rgba(255,198,89,.3)}
+.chip-borrador {background:rgba(100,100,100,.2);  color:var(--gray);border:1px solid rgba(100,100,100,.3)}
+.chip-gratis   {background:rgba(110,231,168,.1);  color:var(--ok);border:1px solid rgba(110,231,168,.3)}
+.chip-pago     {background:rgba(216,195,149,.1);  color:var(--g);border:1px solid rgba(216,195,149,.25)}
 
-.tz-estado{font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .5rem;border-radius:20px}
-.est-en_curso     {background:rgba(36,214,165,.15);color:#24d6a5;border:1px solid rgba(36,214,165,.4)}
-.est-inscripciones{background:rgba(255,198,89,.15);color:#ffc659;border:1px solid rgba(255,198,89,.4)}
-.est-finalizado   {background:rgba(0,132,133,.15); color:#008485;border:1px solid rgba(0,132,133,.4)}
-.est-borrador     {background:rgba(0,42,96,.5);    color:var(--tz-gray);border:1px solid rgba(0,132,133,.2)}
-.est-pendiente    {background:rgba(0,42,96,.5);    color:var(--tz-gray);border:1px solid rgba(0,132,133,.2)}
+/* ── PESTAÑAS ── */
+.tabs{display:flex;border-bottom:1px solid var(--ln);gap:2px;flex-wrap:wrap}
+.tab{padding:.6rem .9rem;font:.72rem 'Michroma',sans-serif;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;color:var(--gray);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--tx)}
+.tab.on{color:var(--g);border-bottom-color:var(--g)}
+.tab-panel{display:none;padding:1.1rem 0 0}.tab-panel.on{display:block}
 
-.tz-status{font-size:.78rem;padding:.4rem .7rem;border-radius:5px;margin-top:.5rem;display:none}
-.tz-status.ok {background:rgba(36,214,165,.15);color:#24d6a5;border:1px solid rgba(36,214,165,.35);display:block}
-.tz-status.err{background:rgba(255,77,77,.12);  color:#ff7070;border:1px solid rgba(255,77,77,.3); display:block}
+/* ── GRID DE LISTA+EDITOR ── */
+.le-grid{display:grid;grid-template-columns:260px 1fr;gap:1.2rem;align-items:start}
+@media(max-width:780px){.le-grid{grid-template-columns:1fr}}
+.le-list{max-height:70vh;overflow-y:auto;list-style:none}
+.le-item{padding:.75rem 1rem;cursor:pointer;border-bottom:1px solid rgba(216,195,149,.08);display:flex;align-items:center;gap:.6rem;transition:background .12s}
+.le-item:hover{background:rgba(216,195,149,.06)}
+.le-item.on{background:rgba(216,195,149,.1);border-left:3px solid var(--g)}
+.le-item-n{flex:1;font-size:.87rem;font-weight:700}
+.le-empty{padding:1.2rem;text-align:center;color:var(--gray);font-size:.82rem}
 
-.tz-log-drop{border:2px dashed var(--tz-line);border-radius:8px;padding:1.5rem;text-align:center;color:var(--tz-gray);font-size:.83rem;cursor:pointer;transition:border-color .15s,background .15s}
-.tz-log-drop:hover,.tz-log-drop.drag-over{border-color:var(--tz-gold);background:rgba(255,198,89,.06);color:var(--tz-text)}
-.tz-log-drop i{font-size:1.8rem;display:block;margin-bottom:.4rem;color:var(--tz-teal)}
+/* ── PODIO ── */
+.podium-preview{display:flex;align-items:flex-end;justify-content:center;gap:0;margin:1rem 0;height:120px}
+.pod-step{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:90px;background:var(--b3);border:1px solid var(--ln);padding:.5rem .3rem .4rem;position:relative}
+.pod-step:nth-child(1){height:80px;order:2;background:linear-gradient(180deg,rgba(255,213,74,.1),rgba(216,195,149,.06));border-color:rgba(255,213,74,.35)}
+.pod-step:nth-child(2){height:62px;order:1}
+.pod-step:nth-child(3){height:50px;order:3}
+.pod-logo{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--ln);background:var(--b4);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:.7rem;color:var(--gray)}
+.pod-logo img{width:100%;height:100%;object-fit:cover}
+.pod-num{font-family:'Michroma',sans-serif;font-size:.8rem;color:var(--g);margin-bottom:2px}
+.pod-num.p1{color:#FFD54A}
+.pod-name{font-size:.62rem;color:var(--tx);text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:80px;margin-top:2px}
 
-.tz-spin{display:inline-block;animation:spin 1s linear infinite}
+/* ── UPLOADER CALENDARIO ── */
+.upload-zone{border:2px dashed var(--ln);border-radius:8px;padding:2rem;text-align:center;color:var(--gray);font-size:.85rem;cursor:pointer;transition:all .15s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--g);background:rgba(216,195,149,.04);color:var(--tx)}
+.upload-zone i{font-size:2rem;display:block;margin-bottom:.5rem;color:var(--ga)}
+.cal-prev{max-width:100%;border-radius:6px;border:1px solid var(--ln);margin-top:.8rem;display:none}
+
+/* ── SUBPÁGINAS ── */
+.mod-preview{border:1px solid var(--ln);border-radius:8px;padding:1rem;margin-top:.8rem}
+.mod-preview .mp-bar{height:6px;border-radius:3px;margin-bottom:.6rem}
+.mod-preview .mp-name{font:700 .9rem 'Michroma',sans-serif}
+.mod-preview .mp-url{font-size:.72rem;color:var(--gray);margin-top:2px}
+
+/* ── LOG DROP ── */
+.log-drop{border:2px dashed var(--ln);border-radius:6px;padding:1.3rem;text-align:center;color:var(--gray);font-size:.82rem;cursor:pointer;transition:all .15s}
+.log-drop:hover,.log-drop.drag-over{border-color:var(--g);background:rgba(216,195,149,.04)}
+.log-drop i{font-size:1.6rem;display:block;margin-bottom:.3rem;color:var(--ga)}
+
+/* ── SPIN ── */
+.spin{display:inline-block;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-#tz-login{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:1.5rem;background:var(--tz-bg)}
-.tz-login-box{background:var(--tz-bg2);border:1px solid var(--tz-line);border-radius:12px;padding:2rem 1.8rem;max-width:360px;width:100%}
-.tz-login-box h2{font-family:'Michroma',sans-serif;color:var(--tz-gold);font-size:.95rem;letter-spacing:.1em;text-transform:uppercase;margin:0 0 1.4rem;text-align:center}
-#tz-app{display:none}
+@media(max-width:760px){
+  .ad-side{position:fixed;left:-220px;z-index:100;height:100dvh;transition:left .25s}
+  .ad-side.open{left:0}
+  .ad-main{padding:1rem}
+  .fg2{grid-template-columns:1fr}
+  .fg2.t3{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="tz-login">
-  <div class="tz-login-box">
-    <h2><i class="fa-solid fa-trophy" style="margin-right:.4rem"></i>Torneos Admin</h2>
-    <div class="tz-form">
-      <div>
-        <label class="tz-label">Usuario</label>
-        <input class="tz-input" type="text" id="login-user" placeholder="Sin @" autocomplete="username">
-      </div>
-      <div>
-        <label class="tz-label">Contraseña</label>
-        <input class="tz-input" type="password" id="login-pass" autocomplete="current-password">
-      </div>
-      <button class="tz-btn tz-btn-pri" id="btn-login" style="margin-top:.3rem">
-        <i class="fa-solid fa-right-to-bracket"></i> Entrar
-      </button>
-      <div class="tz-status" id="login-status"></div>
+<!-- ═══ LOGIN ════════════════════════════════════════════════════════ -->
+<div id="ad-login">
+  <div class="ad-login-box">
+    <h2><img src="../imagenes/LOGO PUMAS WEB.png" alt="" style="width:40px;vertical-align:middle;margin-right:.5rem">Corp Admin</h2>
+    <div class="fg">
+      <label>Usuario</label>
+      <input type="text" id="l-usr" placeholder="Sin @" autocomplete="username">
     </div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="tz-app">
-<div class="tz-wrap">
-  <div class="tz-header">
-    <i class="fa-solid fa-trophy" style="color:var(--tz-gold);font-size:1.1rem"></i>
-    <h1>Torneos Corp</h1>
-    <a href="../" target="_blank" class="tz-btn tz-btn-sec tz-btn-sm">
-      <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Corp
-    </a>
-    <button class="tz-btn tz-btn-sec tz-btn-sm" onclick="P.logout()" title="Cerrar sesión">
-      <i class="fa-solid fa-right-from-bracket"></i>
+    <div class="fg">
+      <label>Contraseña</label>
+      <input type="password" id="l-pass" autocomplete="current-password">
+    </div>
+    <button class="btn btn-g" id="btn-login" style="width:100%;margin-top:.3rem;justify-content:center">
+      <i class="fa-solid fa-right-to-bracket"></i> Entrar
     </button>
-  </div>
-
-  <div class="tz-grid">
-    <!-- Lista de torneos -->
-    <div>
-      <div class="tz-panel">
-        <div class="tz-panel-head">
-          <h3><i class="fa-solid fa-list" style="margin-right:.4rem"></i>Torneos</h3>
-          <button class="tz-btn tz-btn-sec tz-btn-sm" onclick="nuevoTorneo()"><i class="fa-solid fa-plus"></i></button>
-        </div>
-        <ul class="tz-lista" id="lista-torneos">
-          <li class="tz-empty">Cargando…</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Editor -->
-    <div class="tz-editor">
-      <div class="tz-editor-head">
-        <h2 id="editor-titulo">Selecciona un torneo</h2>
-        <button class="tz-btn tz-btn-red tz-btn-sm" id="btn-borrar-torneo" style="display:none" onclick="borrarTorneo()">
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
-
-      <div id="editor-vacio" style="padding:2rem;text-align:center;color:var(--tz-gray);font-size:.85rem">
-        <i class="fa-solid fa-trophy" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.6rem"></i>
-        Selecciona un torneo o crea uno nuevo
-      </div>
-
-      <div id="editor-contenido" style="display:none">
-        <div class="tz-tabs">
-          <div class="tz-tab activo" data-tab="info"     onclick="abrirTab(this)"><i class="fa-solid fa-circle-info"></i> Info</div>
-          <div class="tz-tab"        data-tab="equipos"  onclick="abrirTab(this)"><i class="fa-solid fa-users"></i> Equipos</div>
-          <div class="tz-tab"        data-tab="partidas" onclick="abrirTab(this)"><i class="fa-solid fa-list-ol"></i> Partidas</div>
-          <div class="tz-tab"        data-tab="logs"     onclick="abrirTab(this)"><i class="fa-solid fa-file-lines"></i> Logs</div>
-        </div>
-
-        <!-- TAB: INFO -->
-        <div class="tz-tab-panel activo" id="tab-info">
-          <form class="tz-form" onsubmit="guardarTorneo(event)">
-            <div class="tz-form-row">
-              <div>
-                <label class="tz-label">Nombre *</label>
-                <input class="tz-input" id="trn-nombre" placeholder="Nombre del torneo" required>
-              </div>
-              <div>
-                <label class="tz-label">Juego</label>
-                <select class="tz-select2" id="trn-juego">
-                  <option value="free_fire">Free Fire</option>
-                  <option value="cod">Call of Duty</option>
-                  <option value="valorant">Valorant</option>
-                  <option value="fortnite">Fortnite</option>
-                  <option value="minecraft">Minecraft</option>
-                </select>
-              </div>
-            </div>
-            <div class="tz-form-row">
-              <div>
-                <label class="tz-label">Fecha inicio</label>
-                <input class="tz-input" type="datetime-local" id="trn-fecha-inicio">
-              </div>
-              <div>
-                <label class="tz-label">Fecha fin</label>
-                <input class="tz-input" type="datetime-local" id="trn-fecha-fin">
-              </div>
-            </div>
-            <div>
-              <label class="tz-label">Estado</label>
-              <select class="tz-select2" id="trn-estado">
-                <option value="borrador">Borrador</option>
-                <option value="inscripciones">Inscripciones abiertas</option>
-                <option value="en_curso">En curso</option>
-                <option value="finalizado">Finalizado</option>
-              </select>
-            </div>
-            <div>
-              <label class="tz-label">Descripción</label>
-              <textarea class="tz-textarea" id="trn-descripcion" placeholder="Descripción pública del torneo…"></textarea>
-            </div>
-
-            <div style="font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tz-teal);margin-top:.3rem">Colores del portal</div>
-            <div class="tz-form-row">
-              <div>
-                <label class="tz-label">Color primario</label>
-                <div class="tz-color-row">
-                  <input type="color" id="trn-color-primary" value="#ffc659">
-                  <input class="tz-input" id="trn-color-primary-hex" value="#ffc659" placeholder="#ffc659" maxlength="7">
-                </div>
-              </div>
-              <div>
-                <label class="tz-label">Acento</label>
-                <div class="tz-color-row">
-                  <input type="color" id="trn-color-accent" value="#24d6a5">
-                  <input class="tz-input" id="trn-color-accent-hex" value="#24d6a5" placeholder="#24d6a5" maxlength="7">
-                </div>
-              </div>
-            </div>
-            <div class="tz-form-row">
-              <div>
-                <label class="tz-label">Fondo sección</label>
-                <div class="tz-color-row">
-                  <input type="color" id="trn-color-bg" value="#003772">
-                  <input class="tz-input" id="trn-color-bg-hex" value="#003772" placeholder="#003772" maxlength="7">
-                </div>
-              </div>
-              <div>
-                <label class="tz-label">Cupos máx.</label>
-                <input class="tz-input" type="number" id="trn-cupos" placeholder="Sin límite" min="1">
-              </div>
-            </div>
-
-            <div class="tz-form-row">
-              <div>
-                <label class="tz-label">URL Logo</label>
-                <input class="tz-input" id="trn-logo-url" placeholder="https://…">
-              </div>
-              <div>
-                <label class="tz-label">URL Banner</label>
-                <input class="tz-input" id="trn-banner-url" placeholder="https://…">
-              </div>
-            </div>
-
-            <div class="tz-toggle-wrap">
-              <label class="tz-toggle">
-                <input type="checkbox" id="trn-publico">
-                <span class="tz-toggle-track"></span>
-              </label>
-              <span style="font-size:.85rem">Visible al público</span>
-            </div>
-
-            <div style="margin-top:.6rem">
-              <div style="font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tz-teal);margin-bottom:.6rem">
-                <i class="fa-solid fa-eye" style="margin-right:.3rem"></i>Vista previa de la card
-              </div>
-              <div style="max-width:300px;border-radius:12px;overflow:hidden;border:1.5px solid var(--tz-line)">
-                <div id="prev-banner" style="height:90px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#003772,#008485)">
-                  <i class="fa-solid fa-trophy" style="font-size:2rem;color:#ffc659;opacity:.5"></i>
-                </div>
-                <div id="prev-body" style="padding:12px;background:#002a60">
-                  <div id="prev-nombre" style="font-weight:700;font-size:.92rem;color:#d6eaff;margin-bottom:4px">Nombre del torneo</div>
-                  <div style="font-size:.72rem;color:#5a84ad;margin-bottom:8px" id="prev-meta">Free Fire</div>
-                  <span id="prev-estado" style="font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .5rem;border-radius:20px;background:rgba(0,42,96,.5);color:#5a84ad;border:1px solid rgba(0,132,133,.2)">Borrador</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="tz-btn-row">
-              <button type="submit" class="tz-btn tz-btn-pri"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
-              <a id="trn-link-publico" href="#" target="_blank" class="tz-btn tz-btn-sec" style="display:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver en la página pública</a>
-            </div>
-            <div class="tz-status" id="status-info"></div>
-          </form>
-        </div>
-
-        <!-- TAB: EQUIPOS -->
-        <div class="tz-tab-panel" id="tab-equipos">
-          <form class="tz-form" onsubmit="guardarEquipo(event)" style="border:1px solid var(--tz-line);border-radius:8px;padding:1rem;margin-bottom:1rem">
-            <div style="font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tz-teal);margin-bottom:.3rem">
-              <span id="eq-form-titulo">Agregar equipo</span>
-            </div>
-            <div class="tz-form-row">
-              <div><label class="tz-label">Nombre *</label><input class="tz-input" id="eq-nombre" placeholder="Nombre del equipo" required></div>
-              <div><label class="tz-label">WhatsApp</label><input class="tz-input" id="eq-contacto" placeholder="+57…"></div>
-            </div>
-            <div class="tz-form-row">
-              <div><label class="tz-label">Instagram</label><input class="tz-input" id="eq-ig" placeholder="Sin @"></div>
-              <div><label class="tz-label">Grupo</label><input class="tz-input" id="eq-grupo" placeholder="A, B, C…"></div>
-            </div>
-            <input type="hidden" id="eq-id">
-            <div class="tz-btn-row">
-              <button type="submit" class="tz-btn tz-btn-sec tz-btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar equipo</button>
-              <button type="button" class="tz-btn tz-btn-sm" onclick="resetEquipoForm()" style="background:rgba(0,42,96,.5);color:var(--tz-gray);border-color:var(--tz-line)">Cancelar</button>
-            </div>
-            <div class="tz-status" id="status-eq"></div>
-          </form>
-          <div class="tz-table-wrap">
-            <table class="tz-table">
-              <thead><tr><th>#</th><th>Nombre</th><th>Grupo</th><th>Contacto</th><th></th></tr></thead>
-              <tbody id="tbody-equipos"><tr><td colspan="5" style="text-align:center;color:var(--tz-gray);padding:1rem">Cargando…</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- TAB: PARTIDAS -->
-        <div class="tz-tab-panel" id="tab-partidas">
-          <form class="tz-form" onsubmit="guardarPartida(event)" style="border:1px solid var(--tz-line);border-radius:8px;padding:1rem;margin-bottom:1rem">
-            <div style="font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tz-teal);margin-bottom:.3rem">
-              <span id="pt-form-titulo">Nueva partida</span>
-            </div>
-            <div class="tz-form-row">
-              <div>
-                <label class="tz-label">Fase</label>
-                <select class="tz-select2" id="pt-fase">
-                  <option value="grupos">Grupos</option>
-                  <option value="cuartos">Cuartos de final</option>
-                  <option value="semis">Semifinal</option>
-                  <option value="final">Final</option>
-                  <option value="gran_final">Gran Final</option>
-                </select>
-              </div>
-              <div><label class="tz-label">Ronda</label><input class="tz-input" type="number" id="pt-ronda" value="1" min="1"></div>
-            </div>
-            <div class="tz-form-row">
-              <div><label class="tz-label">Sala #</label><input class="tz-input" type="number" id="pt-sala" min="1" placeholder="Opcional"></div>
-              <div>
-                <label class="tz-label">Estado</label>
-                <select class="tz-select2" id="pt-estado">
-                  <option value="pendiente">Pendiente</option>
-                  <option value="en_curso">En curso</option>
-                  <option value="finalizado">Finalizado</option>
-                </select>
-              </div>
-            </div>
-            <div><label class="tz-label">Notas</label><input class="tz-input" id="pt-notas" placeholder="Notas opcionales…"></div>
-            <input type="hidden" id="pt-id">
-            <div class="tz-btn-row">
-              <button type="submit" class="tz-btn tz-btn-sec tz-btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar partida</button>
-              <button type="button" class="tz-btn tz-btn-sm" onclick="resetPartidaForm()" style="background:rgba(0,42,96,.5);color:var(--tz-gray);border-color:var(--tz-line)">Cancelar</button>
-            </div>
-            <div class="tz-status" id="status-pt"></div>
-          </form>
-          <div class="tz-table-wrap">
-            <table class="tz-table">
-              <thead><tr><th>Fase</th><th>Ronda</th><th>Sala</th><th>Estado</th><th>Resultados</th><th></th></tr></thead>
-              <tbody id="tbody-partidas"><tr><td colspan="6" style="text-align:center;color:var(--tz-gray);padding:1rem">Cargando…</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- TAB: LOGS -->
-        <div class="tz-tab-panel" id="tab-logs">
-          <div style="margin-bottom:1rem">
-            <label class="tz-label">Partida destino (opcional)</label>
-            <select class="tz-select2" id="log-partida-sel" style="max-width:280px">
-              <option value="">— Sin partida asociada —</option>
-            </select>
-          </div>
-          <div class="tz-log-drop" id="log-drop" onclick="document.getElementById('log-file').click()">
-            <i class="fa-solid fa-file-arrow-up"></i>
-            Arrastra un archivo .log aquí o haz clic para seleccionar
-          </div>
-          <input type="file" id="log-file" accept=".log,.txt" style="display:none" onchange="subirLog(this.files)">
-          <div class="tz-status" id="status-log"></div>
-          <div class="tz-table-wrap" style="margin-top:1rem">
-            <table class="tz-table">
-              <thead><tr><th>Archivo</th><th>Partida</th><th>Subido</th><th>Estado</th></tr></thead>
-              <tbody id="tbody-logs"><tr><td colspan="4" style="text-align:center;color:var(--tz-gray);padding:1rem">Sin logs aún</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="st" id="l-st"></div>
   </div>
 </div>
+
+<!-- ═══ APP ══════════════════════════════════════════════════════════ -->
+<div id="ad-app">
+  <div class="ad-wrap">
+
+    <!-- ── Sidebar ── -->
+    <aside class="ad-side" id="ad-side">
+      <div class="ad-side-head">
+        <h1><img src="../imagenes/LOGO PUMAS WEB.png" alt="" style="width:24px"> Corp Admin</h1>
+        <small id="ad-usuario">—</small>
+      </div>
+      <nav>
+        <ul class="ad-nav">
+          <li><a href="#" class="on" data-sec="torneos"  onclick="irA('torneos',this)">  <i class="fa-solid fa-trophy"></i>   Torneos</a></li>
+          <li><a href="#" data-sec="relampagos"  onclick="irA('relampagos',this)">   <i class="fa-solid fa-bolt"></i>     Relampagos</a></li>
+          <li><a href="#" data-sec="aliados"     onclick="irA('aliados',this)">       <i class="fa-solid fa-handshake"></i> Eventos Aliados</a></li>
+          <li><a href="#" data-sec="calendario"  onclick="irA('calendario',this)">   <i class="fa-regular fa-calendar"></i>Calendario</a></li>
+          <li><a href="#" data-sec="subpaginas"  onclick="irA('subpaginas',this)">   <i class="fa-solid fa-layer-group"></i>Subpáginas</a></li>
+          <li><a href="#" data-sec="canales"     onclick="irA('canales',this)">       <i class="fa-solid fa-comments"></i>  Canales</a></li>
+        </ul>
+      </nav>
+      <div class="ad-side-foot">
+        <a href="../" target="_blank" class="btn btn-s btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Corp</a>
+        <button class="btn btn-s btn-sm" onclick="P.logout('../')"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <main class="ad-main" id="ad-main">
+      <button class="btn btn-s btn-sm" id="btn-menu-toggle" style="display:none;margin-bottom:.8rem" onclick="toggleSide()"><i class="fa-solid fa-bars"></i></button>
+
+      <!-- ══ TORNEOS ══ -->
+      <section class="ad-section on" id="sec-torneos">
+        <div class="le-grid">
+          <div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3><i class="fa-solid fa-trophy"></i> Torneos</h3>
+                <button class="btn btn-s btn-sm" onclick="trn.nuevo()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              <ul class="le-list" id="trn-lista"><li class="le-empty">Cargando…</li></ul>
+            </div>
+          </div>
+          <div class="panel" id="trn-editor">
+            <div class="panel-head">
+              <h3 id="trn-ed-titulo">Selecciona un torneo</h3>
+              <button class="btn btn-r btn-sm" id="trn-btn-del" style="display:none" onclick="trn.borrar()"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div id="trn-vacio" style="padding:2rem;text-align:center;color:var(--gray);font-size:.85rem">
+              <i class="fa-solid fa-trophy" style="font-size:2rem;opacity:.15;display:block;margin-bottom:.5rem"></i>
+              Selecciona un torneo o crea uno nuevo
+            </div>
+            <div id="trn-contenido" style="display:none">
+              <div class="tabs" id="trn-tabs">
+                <div class="tab on" data-t="info"     onclick="trn.tab(this)"><i class="fa-solid fa-circle-info"></i> Info</div>
+                <div class="tab" data-t="equipos"  onclick="trn.tab(this)"><i class="fa-solid fa-users"></i> Equipos</div>
+                <div class="tab" data-t="partidas" onclick="trn.tab(this)"><i class="fa-solid fa-list-ol"></i> Partidas</div>
+                <div class="tab" data-t="logs"     onclick="trn.tab(this)"><i class="fa-solid fa-file-lines"></i> Logs</div>
+              </div>
+
+              <!-- INFO -->
+              <div class="tab-panel on" id="trn-tab-info" style="padding:1.1rem">
+                <form onsubmit="trn.guardar(event)">
+                  <div class="fg2">
+                    <div class="fg"><label>Nombre *</label><input id="t-nombre" required></div>
+                    <div class="fg"><label>Juego</label>
+                      <select id="t-juego">
+                        <option value="free_fire">Free Fire</option><option value="cod">Call of Duty</option>
+                        <option value="valorant">Valorant</option><option value="fortnite">Fortnite</option>
+                        <option value="minecraft">Minecraft</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Fecha inicio</label><input type="datetime-local" id="t-fi"></div>
+                    <div class="fg"><label>Fecha fin</label><input type="datetime-local" id="t-ff"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Fecha aprox. inicio (texto)</label><input id="t-fecha-txt" placeholder="Ej: Enero 2027"></div>
+                    <div class="fg"><label>Estado</label>
+                      <select id="t-estado">
+                        <option value="borrador">Borrador</option><option value="inscripciones">Inscripciones</option>
+                        <option value="en_curso">En curso</option><option value="finalizado">Finalizado</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Equipos máx.</label><input type="number" id="t-cupos" min="1" placeholder="Sin límite"></div>
+                    <div class="fg"><label>Cuántos equipos esperados</label><input type="number" id="t-n-eq" min="1" placeholder="Sin límite"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg">
+                      <label>Precio</label>
+                      <div style="display:flex;gap:8px;align-items:center">
+                        <div class="toggle-wrap" style="margin:0">
+                          <span style="font-size:.8rem;color:var(--gray)">Gratis</span>
+                          <label class="toggle"><input type="checkbox" id="t-pago" onchange="trn.togglePago(this)"><span class="toggle-track"></span></label>
+                          <span style="font-size:.8rem;color:var(--gray)">De pago</span>
+                        </div>
+                      </div>
+                      <div class="price-row" id="t-precio-wrap" style="margin-top:6px;display:none">
+                        <input type="number" id="t-precio-val" placeholder="0" min="0" step="any">
+                        <select id="t-precio-mon"><option value="COP">COP</option><option value="USD">USD</option></select>
+                      </div>
+                    </div>
+                    <div class="fg"><label>Método de pago</label><input id="t-metodo" placeholder="Nequi, Bancolombia, PayPal…"></div>
+                  </div>
+                  <div class="fg"><label>Descripción</label><textarea id="t-desc"></textarea></div>
+                  <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin:.5rem 0">Colores del portal</div>
+                  <div class="fg2">
+                    <div class="fg"><label>Color primario</label><div class="color-row"><input type="color" id="t-c-pri"><input id="t-c-pri-h" maxlength="7" placeholder="#D8C395"></div></div>
+                    <div class="fg"><label>Acento</label><div class="color-row"><input type="color" id="t-c-acc"><input id="t-c-acc-h" maxlength="7" placeholder="#F4EEDC"></div></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Fondo</label><div class="color-row"><input type="color" id="t-c-bg"><input id="t-c-bg-h" maxlength="7" placeholder="#0A0A0A"></div></div>
+                    <div class="fg"><label>URL Logo</label><input id="t-logo" placeholder="https://…"></div>
+                  </div>
+                  <div class="fg"><label>URL Banner</label><input id="t-banner" placeholder="https://…"></div>
+                  <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="t-pub"><span class="toggle-track"></span></label><span style="font-size:.85rem">Visible al público</span></div>
+                  <div class="btn-row">
+                    <button type="submit" class="btn btn-g btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                    <a id="t-link-pub" href="#" target="_blank" class="btn btn-s btn-sm" style="display:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver público</a>
+                  </div>
+                  <div class="st" id="st-trn-info"></div>
+                </form>
+              </div>
+
+              <!-- EQUIPOS -->
+              <div class="tab-panel" id="trn-tab-equipos" style="padding:1.1rem">
+                <form onsubmit="trn.guardarEq(event)" style="border:1px solid var(--ln);border-radius:6px;padding:.9rem;margin-bottom:1rem">
+                  <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem" id="eq-titulo">Agregar equipo</div>
+                  <div class="fg2">
+                    <div class="fg"><label>Nombre *</label><input id="eq-nombre" required></div>
+                    <div class="fg"><label>WhatsApp</label><input id="eq-wa" placeholder="+57…"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Instagram</label><input id="eq-ig" placeholder="Sin @"></div>
+                    <div class="fg"><label>Grupo / Seed</label><input id="eq-grupo" placeholder="A, B…"></div>
+                  </div>
+                  <input type="hidden" id="eq-id">
+                  <div class="btn-row">
+                    <button type="submit" class="btn btn-s btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar equipo</button>
+                    <button type="button" class="btn btn-sm" style="background:rgba(0,0,0,.3);border-color:var(--ln);color:var(--gray)" onclick="trn.resetEq()">Cancelar</button>
+                  </div>
+                  <div class="st" id="st-eq"></div>
+                </form>
+                <div class="tbl-wrap"><table class="tbl">
+                  <thead><tr><th>#</th><th>Nombre</th><th>Grupo</th><th>Contacto</th><th></th></tr></thead>
+                  <tbody id="eq-tbody"></tbody>
+                </table></div>
+              </div>
+
+              <!-- PARTIDAS -->
+              <div class="tab-panel" id="trn-tab-partidas" style="padding:1.1rem">
+                <form onsubmit="trn.guardarPt(event)" style="border:1px solid var(--ln);border-radius:6px;padding:.9rem;margin-bottom:1rem">
+                  <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem" id="pt-titulo">Nueva partida</div>
+                  <div class="fg2">
+                    <div class="fg"><label>Fase</label>
+                      <select id="pt-fase">
+                        <option value="grupos">Grupos</option><option value="cuartos">Cuartos</option>
+                        <option value="semis">Semifinal</option><option value="final">Final</option>
+                        <option value="gran_final">Gran Final</option>
+                      </select>
+                    </div>
+                    <div class="fg"><label>Ronda</label><input type="number" id="pt-ronda" value="1" min="1"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Sala #</label><input type="number" id="pt-sala" placeholder="Opcional"></div>
+                    <div class="fg"><label>Estado</label>
+                      <select id="pt-estado"><option value="pendiente">Pendiente</option><option value="en_curso">En curso</option><option value="finalizado">Finalizado</option></select>
+                    </div>
+                  </div>
+                  <div class="fg"><label>Notas</label><input id="pt-notas" placeholder="Opcional…"></div>
+                  <input type="hidden" id="pt-id">
+                  <div class="btn-row">
+                    <button type="submit" class="btn btn-s btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                    <button type="button" class="btn btn-sm" style="background:rgba(0,0,0,.3);border-color:var(--ln);color:var(--gray)" onclick="trn.resetPt()">Cancelar</button>
+                  </div>
+                  <div class="st" id="st-pt"></div>
+                </form>
+                <div class="tbl-wrap"><table class="tbl">
+                  <thead><tr><th>Fase</th><th>Ronda</th><th>Sala</th><th>Estado</th><th>Resultados</th><th></th></tr></thead>
+                  <tbody id="pt-tbody"></tbody>
+                </table></div>
+              </div>
+
+              <!-- LOGS -->
+              <div class="tab-panel" id="trn-tab-logs" style="padding:1.1rem">
+                <div class="fg">
+                  <label>Partida destino</label>
+                  <select id="log-partida" style="max-width:280px"><option value="">— Sin partida —</option></select>
+                </div>
+                <div class="log-drop" id="log-drop" onclick="document.getElementById('log-file').click()">
+                  <i class="fa-solid fa-file-arrow-up"></i>Arrastra un .log o haz clic para seleccionar
+                </div>
+                <input type="file" id="log-file" accept=".log,.txt" style="display:none" onchange="trn.subirLog(this.files)">
+                <div class="st" id="st-log"></div>
+                <div class="tbl-wrap" style="margin-top:.8rem"><table class="tbl">
+                  <thead><tr><th>Archivo</th><th>Partida</th><th>Subido</th><th>Estado</th></tr></thead>
+                  <tbody id="log-tbody"></tbody>
+                </table></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ RELAMPAGOS ══ -->
+      <section class="ad-section" id="sec-relampagos">
+        <div class="le-grid">
+          <div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3><i class="fa-solid fa-bolt"></i> Relampagos</h3>
+                <button class="btn btn-s btn-sm" onclick="rmp.nuevo()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              <ul class="le-list" id="rmp-lista"><li class="le-empty">Cargando…</li></ul>
+            </div>
+          </div>
+          <div class="panel" id="rmp-editor">
+            <div class="panel-head">
+              <h3 id="rmp-ed-titulo">Selecciona un relámpago</h3>
+              <button class="btn btn-r btn-sm" id="rmp-btn-del" style="display:none" onclick="rmp.borrar()"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div id="rmp-vacio" style="padding:2rem;text-align:center;color:var(--gray);font-size:.85rem">
+              <i class="fa-solid fa-bolt" style="font-size:2rem;opacity:.15;display:block;margin-bottom:.5rem"></i>
+              Selecciona un relámpago o crea uno nuevo
+            </div>
+            <div id="rmp-contenido" style="display:none">
+              <div class="tabs">
+                <div class="tab on" data-r="info"      onclick="rmp.tab(this)"><i class="fa-solid fa-circle-info"></i> Info</div>
+                <div class="tab"    data-r="resultados" onclick="rmp.tab(this)"><i class="fa-solid fa-medal"></i> Resultados</div>
+              </div>
+
+              <!-- RELAMPAGO INFO -->
+              <div class="tab-panel on" id="rmp-tab-info" style="padding:1.1rem">
+                <form onsubmit="rmp.guardar(event)">
+                  <div class="fg2">
+                    <div class="fg"><label>Nombre *</label><input id="r-nombre" required></div>
+                    <div class="fg"><label>Juego</label>
+                      <select id="r-juego">
+                        <option value="free_fire">Free Fire</option><option value="cod">Call of Duty</option>
+                        <option value="valorant">Valorant</option><option value="fortnite">Fortnite</option>
+                        <option value="minecraft">Minecraft</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Estado</label>
+                      <select id="r-estado">
+                        <option value="activo">Activo</option>
+                        <option value="en_juego">En Juego</option>
+                        <option value="finalizado">Finalizado</option>
+                      </select>
+                    </div>
+                    <div class="fg"><label>Fecha</label><input type="datetime-local" id="r-fecha"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Premio</label><input id="r-premio" placeholder="Ej: $50.000 COP"></div>
+                    <div class="fg"><label>Método de pago del organizador</label><input id="r-metodo" placeholder="Nequi, Daviplata…"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg">
+                      <label>Inscripción</label>
+                      <div class="toggle-wrap">
+                        <span style="font-size:.8rem;color:var(--gray)">Gratis</span>
+                        <label class="toggle"><input type="checkbox" id="r-pago" onchange="rmp.togglePago(this)"><span class="toggle-track"></span></label>
+                        <span style="font-size:.8rem;color:var(--gray)">De pago</span>
+                      </div>
+                      <div class="price-row" id="r-costo-wrap" style="margin-top:6px;display:none">
+                        <input type="number" id="r-costo-val" placeholder="0" min="0" step="any">
+                        <select id="r-costo-mon"><option value="COP">COP</option><option value="USD">USD</option></select>
+                      </div>
+                    </div>
+                    <div class="fg"><label>WhatsApp organizador</label><input id="r-wa" placeholder="+57…"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Instagram organizador</label><input id="r-ig" placeholder="Sin @"></div>
+                    <div class="fg"><label>Logo URL</label><input id="r-logo" placeholder="https://…"></div>
+                  </div>
+                  <div class="fg"><label>Banner URL</label><input id="r-banner" placeholder="https://…"></div>
+                  <div class="fg"><label>Descripción</label><textarea id="r-desc"></textarea></div>
+                  <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="r-pub"><span class="toggle-track"></span></label><span style="font-size:.85rem">Visible al público</span></div>
+                  <div class="btn-row">
+                    <button type="submit" class="btn btn-g btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                    <a id="r-link-pub" href="#" target="_blank" class="btn btn-s btn-sm" style="display:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver público</a>
+                  </div>
+                  <div class="st" id="st-rmp-info"></div>
+                </form>
+              </div>
+
+              <!-- RELAMPAGO RESULTADOS -->
+              <div class="tab-panel" id="rmp-tab-resultados" style="padding:1.1rem">
+                <p style="font-size:.82rem;color:var(--gray);margin-bottom:1rem">Tabla de resultados — ingresa los datos por equipo. Se ordenan por puesto; usa 0 para sin clasificar.</p>
+                <!-- Podio preview -->
+                <div id="rmp-podio" class="podium-preview" style="display:none"></div>
+                <!-- Formulario de equipo -->
+                <form onsubmit="rmp.guardarEq(event)" style="border:1px solid var(--ln);border-radius:6px;padding:.9rem;margin-bottom:1rem">
+                  <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem" id="rq-titulo">Agregar equipo</div>
+                  <div class="fg2">
+                    <div class="fg"><label>Nombre equipo *</label><input id="rq-nombre" required></div>
+                    <div class="fg"><label>Logo URL</label><input id="rq-logo" placeholder="https://…"></div>
+                  </div>
+                  <div class="fg2 t3">
+                    <div class="fg"><label>Puesto (0 = sin puesto)</label><input type="number" id="rq-puesto" value="0" min="0"></div>
+                    <div class="fg"><label>Puntos</label><input type="number" id="rq-puntos" value="0" min="0"></div>
+                    <div class="fg"><label>Kills</label><input type="number" id="rq-kills" value="0" min="0"></div>
+                  </div>
+                  <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;margin:.5rem 0 .3rem">Jugadores (4)</div>
+                  <div class="fg2">
+                    <div class="fg"><label>Jugador 1</label><input id="rq-j1" placeholder="Nombre en juego"></div>
+                    <div class="fg"><label>Jugador 2</label><input id="rq-j2" placeholder="Nombre en juego"></div>
+                  </div>
+                  <div class="fg2">
+                    <div class="fg"><label>Jugador 3</label><input id="rq-j3"></div>
+                    <div class="fg"><label>Jugador 4</label><input id="rq-j4"></div>
+                  </div>
+                  <input type="hidden" id="rq-id">
+                  <div class="btn-row">
+                    <button type="submit" class="btn btn-s btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar equipo</button>
+                    <button type="button" class="btn btn-sm" style="background:rgba(0,0,0,.3);border-color:var(--ln);color:var(--gray)" onclick="rmp.resetEq()">Cancelar</button>
+                  </div>
+                  <div class="st" id="st-rq"></div>
+                </form>
+                <div class="tbl-wrap"><table class="tbl">
+                  <thead><tr><th>#</th><th>Equipo</th><th>Puntos</th><th>Kills</th><th>Jugadores</th><th></th></tr></thead>
+                  <tbody id="rq-tbody"></tbody>
+                </table></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ EVENTOS ALIADOS ══ -->
+      <section class="ad-section" id="sec-aliados">
+        <div class="le-grid">
+          <div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3><i class="fa-solid fa-handshake"></i> Eventos Aliados</h3>
+                <button class="btn btn-s btn-sm" onclick="ali.nuevo()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              <ul class="le-list" id="ali-lista"><li class="le-empty">Cargando…</li></ul>
+            </div>
+          </div>
+          <div class="panel" id="ali-editor">
+            <div class="panel-head"><h3 id="ali-ed-titulo">Selecciona un evento</h3>
+              <button class="btn btn-r btn-sm" id="ali-btn-del" style="display:none" onclick="ali.borrar()"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div id="ali-vacio" style="padding:2rem;text-align:center;color:var(--gray);font-size:.85rem">
+              <i class="fa-solid fa-handshake" style="font-size:2rem;opacity:.15;display:block;margin-bottom:.5rem"></i>
+              Selecciona un evento o crea uno nuevo
+            </div>
+            <div id="ali-contenido" style="display:none;padding:1.1rem">
+              <form onsubmit="ali.guardar(event)">
+                <div class="fg2">
+                  <div class="fg"><label>Nombre *</label><input id="a-nombre" required></div>
+                  <div class="fg"><label>Juego</label><input id="a-juego" placeholder="Free Fire, CoD…"></div>
+                </div>
+                <div class="fg2">
+                  <div class="fg"><label>Fecha</label><input type="date" id="a-fecha"></div>
+                  <div class="fg"><label>Premio / Costo del premio</label><input id="a-premio" placeholder="Ej: $100.000 COP"></div>
+                </div>
+                <div class="fg2">
+                  <div class="fg">
+                    <label>Inscripción</label>
+                    <div class="toggle-wrap">
+                      <span style="font-size:.8rem;color:var(--gray)">Gratis</span>
+                      <label class="toggle"><input type="checkbox" id="a-pago" onchange="ali.togglePago(this)"><span class="toggle-track"></span></label>
+                      <span style="font-size:.8rem;color:var(--gray)">De pago</span>
+                    </div>
+                    <div class="price-row" id="a-costo-wrap" style="margin-top:6px;display:none">
+                      <input type="number" id="a-costo-val" placeholder="0" min="0" step="any">
+                      <select id="a-costo-mon"><option value="COP">COP</option><option value="USD">USD</option></select>
+                    </div>
+                  </div>
+                  <div class="fg"><label>Orden (menor = arriba)</label><input type="number" id="a-orden" value="0" min="0"></div>
+                </div>
+                <div class="fg2">
+                  <div class="fg"><label>Instagram del organizador</label><input id="a-ig" placeholder="Sin @"></div>
+                  <div class="fg"><label>WhatsApp</label><input id="a-wa" placeholder="+57…"></div>
+                </div>
+                <div class="fg2">
+                  <div class="fg"><label>Discord oficial</label><input id="a-discord" placeholder="https://discord.gg/…"></div>
+                  <div class="fg"><label>Logo URL</label><input id="a-logo" placeholder="https://…"></div>
+                </div>
+                <div class="fg"><label>Banner URL</label><input id="a-banner" placeholder="https://…"></div>
+                <div class="fg"><label>Descripción</label><textarea id="a-desc"></textarea></div>
+                <div class="toggle-wrap"><label class="toggle"><input type="checkbox" id="a-activo"><span class="toggle-track"></span></label><span style="font-size:.85rem">Activo (visible)</span></div>
+                <div class="btn-row">
+                  <button type="submit" class="btn btn-g btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                </div>
+                <div class="st" id="st-ali"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ CALENDARIO ══ -->
+      <section class="ad-section" id="sec-calendario">
+        <div class="panel" style="max-width:640px">
+          <div class="panel-head"><h3><i class="fa-regular fa-calendar"></i> Subir Imagen de Calendario</h3></div>
+          <div class="panel-body">
+            <p style="font-size:.83rem;color:var(--gray);margin-bottom:1rem">Sube la imagen del calendario mensual o bimestral que se mostrará en la página principal.</p>
+            <div class="upload-zone" id="cal-zone" onclick="document.getElementById('cal-file').click()">
+              <i class="fa-regular fa-image"></i>
+              Arrastra una imagen o haz clic para seleccionar
+            </div>
+            <input type="file" id="cal-file" accept="image/*" style="display:none" onchange="cal.preview(this)">
+            <img id="cal-prev" class="cal-prev" alt="Vista previa del calendario">
+            <div class="fg" style="margin-top:1rem">
+              <label>O pega URL de la imagen</label>
+              <input id="cal-url" placeholder="https://…" oninput="cal.previewUrl(this.value)">
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-g btn-sm" onclick="cal.guardar()"><i class="fa-solid fa-floppy-disk"></i> Guardar URL</button>
+              <button class="btn btn-r btn-sm" onclick="cal.limpiar()"><i class="fa-solid fa-trash"></i> Limpiar</button>
+            </div>
+            <div class="st" id="st-cal"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ SUBPÁGINAS ══ -->
+      <section class="ad-section" id="sec-subpaginas">
+        <div class="le-grid">
+          <div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3><i class="fa-solid fa-layer-group"></i> Subpáginas</h3>
+                <button class="btn btn-s btn-sm" onclick="sub.nuevo()"><i class="fa-solid fa-plus"></i></button>
+              </div>
+              <ul class="le-list" id="sub-lista"><li class="le-empty">Cargando…</li></ul>
+            </div>
+          </div>
+          <div class="panel" id="sub-editor">
+            <div class="panel-head"><h3 id="sub-ed-titulo">Selecciona una subpágina</h3>
+              <button class="btn btn-r btn-sm" id="sub-btn-del" style="display:none" onclick="sub.borrar()"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div id="sub-vacio" style="padding:2rem;text-align:center;color:var(--gray);font-size:.85rem">
+              <i class="fa-solid fa-layer-group" style="font-size:2rem;opacity:.15;display:block;margin-bottom:.5rem"></i>
+              Selecciona una subpágina o crea una nueva
+            </div>
+            <div id="sub-contenido" style="display:none;padding:1.1rem">
+              <form onsubmit="sub.guardar(event)">
+                <div class="fg2">
+                  <div class="fg"><label>Nombre *</label><input id="s-nombre" required oninput="sub.actualizarPreview()"></div>
+                  <div class="fg"><label>Slug (URL: /subpagina?p=slug)</label><input id="s-slug" placeholder="mi-evento" pattern="[a-z0-9\-]+" required></div>
+                </div>
+                <div class="fg"><label>Descripción</label><textarea id="s-desc" style="min-height:60px"></textarea></div>
+                <div class="fg2">
+                  <div class="fg"><label>Logo URL</label><input id="s-logo" placeholder="https://…" oninput="sub.actualizarPreview()"></div>
+                  <div class="fg"><label>Banner URL</label><input id="s-banner" placeholder="https://…"></div>
+                </div>
+                <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin:.6rem 0 .4rem">Personalización de colores</div>
+                <div class="fg2 t3">
+                  <div class="fg"><label>Color primario</label><div class="color-row"><input type="color" id="s-c-pri" value="#D8C395" oninput="sub.syncColor('pri',this)"><input id="s-c-pri-h" value="#D8C395" maxlength="7" oninput="sub.syncHex('pri',this)"></div></div>
+                  <div class="fg"><label>Acento</label><div class="color-row"><input type="color" id="s-c-acc" value="#F4EEDC" oninput="sub.syncColor('acc',this)"><input id="s-c-acc-h" value="#F4EEDC" maxlength="7" oninput="sub.syncHex('acc',this)"></div></div>
+                  <div class="fg"><label>Fondo</label><div class="color-row"><input type="color" id="s-c-bg" value="#0A0A0A" oninput="sub.syncColor('bg',this)"><input id="s-c-bg-h" value="#0A0A0A" maxlength="7" oninput="sub.syncHex('bg',this)"></div></div>
+                </div>
+                <!-- Vista previa -->
+                <div class="mod-preview" id="sub-preview">
+                  <div class="mp-bar" id="sub-prev-bar" style="background:#D8C395"></div>
+                  <div style="display:flex;align-items:center;gap:.6rem">
+                    <img id="sub-prev-logo" src="" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover;display:none">
+                    <div>
+                      <div class="mp-name" id="sub-prev-name">Nombre de la subpágina</div>
+                      <div class="mp-url" id="sub-prev-url">/subpagina?p=slug</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="toggle-wrap" style="margin-top:.8rem"><label class="toggle"><input type="checkbox" id="s-activo"><span class="toggle-track"></span></label><span style="font-size:.85rem">Activa (visible)</span></div>
+                <div class="btn-row">
+                  <button type="submit" class="btn btn-g btn-sm"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                  <a id="s-link-pub" href="#" target="_blank" class="btn btn-s btn-sm" style="display:none"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ver subpágina</a>
+                </div>
+                <div class="st" id="st-sub"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ CANALES ══ -->
+      <section class="ad-section" id="sec-canales">
+        <div style="max-width:820px">
+          <div class="panel">
+            <div class="panel-head">
+              <h3><i class="fa-solid fa-comments"></i> Canales & Actividades</h3>
+              <button class="btn btn-g btn-sm" onclick="chan.guardar()"><i class="fa-solid fa-floppy-disk"></i> Guardar todo</button>
+            </div>
+            <div class="panel-body">
+              <p style="font-size:.83rem;color:var(--gray);margin-bottom:1rem">Configura los canales de comunidad y las actividades que aparecen en la página principal.</p>
+              <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">Canales de comunidad</div>
+              <div id="chan-lista" style="display:flex;flex-direction:column;gap:.5rem"></div>
+              <button class="btn btn-s btn-sm" style="margin-top:.6rem" onclick="chan.addCanal()"><i class="fa-solid fa-plus"></i> Agregar canal</button>
+              <div style="color:var(--g);font-family:'Michroma',sans-serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin:1.2rem 0 .6rem">Actividades</div>
+              <div id="act-lista" style="display:flex;flex-direction:column;gap:.5rem"></div>
+              <button class="btn btn-s btn-sm" style="margin-top:.6rem" onclick="chan.addAct()"><i class="fa-solid fa-plus"></i> Agregar actividad</button>
+              <div class="st" id="st-chan"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
 </div>
 
 <script>
 const P = window.PumasPortal;
 const PORTAL = 'torneos';
-
-let torneoActual = null;
-let listaTorneos = [];
-let listaPartidas = [];
-
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const $ = id => document.getElementById(id);
 
+// Precio helpers
+function fmtPrecio(val, mon){
+  if(!val && val!==0) return '';
+  const n = parseFloat(val);
+  if(isNaN(n)) return '';
+  if(mon==='USD') return `$${n % 1 === 0 ? n : n.toFixed(2)} USD`;
+  return `$${Math.round(n).toLocaleString('es-CO')} COP`;
+}
+function parsePrecio(str){
+  if(!str) return {val:'', mon:'COP'};
+  const isUsd = /USD/i.test(str);
+  const num = str.replace(/[^0-9.,]/g,'').replace(',','.');
+  return {val: num||'', mon: isUsd?'USD':'COP'};
+}
+function setPrecioInput(valId, monId, wrapId, str){
+  const {val, mon} = parsePrecio(str);
+  $(valId).value = val; $(monId).value = mon;
+  $(wrapId).style.display = val ? '' : 'none';
+}
+function getPrecioStr(valId, monId){
+  const n = $(valId).value.trim();
+  return n ? fmtPrecio(n, $(monId).value) : null;
+}
+const fmtFecha = iso => iso ? new Date(iso).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+const toLocal = iso => iso ? new Date(new Date(iso)-new Date(iso).getTimezoneOffset()*60000).toISOString().slice(0,16) : '';
+function st(id,tipo,msg){const el=$(id);el.innerHTML=msg;el.className='st'+(tipo?' '+tipo:'');if(tipo==='ok')setTimeout(()=>{if(el.className.includes('ok'))el.className='st'},3000)}
+
+// ── AUTH ──────────────────────────────────────────────────────────────
 function tieneAcceso(ses) {
   if (!ses) return false;
-  return P.tiene(ses, 'super') || P.puede(ses, 'portal:' + PORTAL);
+  // superusuario O permiso al portal de torneos
+  return P.tiene(ses, 'super') || P.puede(ses, PORTAL) || P.puede(ses, 'portal:' + PORTAL);
 }
 
 async function tryAutoLogin() {
   try {
-    const ses = P.sesion();
-    if (ses && tieneAcceso(ses)) mostrarApp();
+    let ses = P.sesion();
+    if (ses && tieneAcceso(ses)) { mostrarApp(ses); return; }
+    ses = await P.validar();
+    if (ses && tieneAcceso(ses)) mostrarApp(ses);
   } catch(e) {}
 }
 
-document.getElementById('btn-login').addEventListener('click', async () => {
-  const user = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  const st   = document.getElementById('login-status');
-  if (!user || !pass) { mostrarStatus(st,'err','Completa los campos'); return; }
-  const btn = document.getElementById('btn-login');
+$('btn-login').addEventListener('click', async () => {
+  const usr = $('l-usr').value.trim();
+  const pass = $('l-pass').value;
+  if (!usr || !pass) { st('l-st','err','Completa los campos'); return; }
+  const btn = $('btn-login');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch tz-spin"></i> Entrando…';
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch spin"></i> Entrando…';
   try {
-    const ok = await P.login(user, pass);
+    const ok = await P.login(usr, pass);
     if (!ok) throw new Error('credenciales');
     const ses = P.sesion();
     if (!tieneAcceso(ses)) throw new Error('sin_acceso');
-    mostrarApp();
+    mostrarApp(ses);
   } catch(e) {
-    const msg = e.message === 'sin_acceso'
-      ? 'No tienes acceso a este módulo'
-      : 'Usuario o contraseña incorrectos';
-    mostrarStatus(st,'err', msg);
+    st('l-st','err', e.message==='sin_acceso' ? 'Sin acceso a este módulo' : 'Usuario o contraseña incorrectos');
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
   }
 });
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('btn-login').click();
-});
+$('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') $('btn-login').click(); });
 
-function mostrarApp() {
-  document.getElementById('tz-login').style.display = 'none';
-  document.getElementById('tz-app').style.display   = '';
-  cargarTorneos();
+function mostrarApp(ses) {
+  $('ad-login').style.display = 'none';
+  $('ad-app').style.display   = '';
+  $('ad-usuario').textContent = ses?.nombre || ses?.usuario || '—';
+  trn.cargar(); rmp.cargar(); ali.cargar(); sub.cargar(); cal.cargar(); chan.cargar();
 }
 
-async function cargarTorneos() {
-  const ul = document.getElementById('lista-torneos');
-  ul.innerHTML = '<li class="tz-empty"><i class="fa-solid fa-circle-notch tz-spin"></i> Cargando…</li>';
-  try {
-    listaTorneos = await P.torneos.adminListar(PORTAL);
-    renderLista();
-  } catch(e) {
-    ul.innerHTML = '<li class="tz-empty" style="color:#ff7070">Error al cargar torneos</li>';
+// ── NAVEGACIÓN ───────────────────────────────────────────────────────
+window.irA = function(sec, el) {
+  document.querySelectorAll('.ad-section').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.ad-nav a').forEach(a => a.classList.remove('on'));
+  $('sec-'+sec).classList.add('on');
+  el.classList.add('on');
+  if(window.innerWidth<=760) $('ad-side').classList.remove('open');
+};
+window.toggleSide = () => $('ad-side').classList.toggle('open');
+
+// Mostrar boton menú en móvil
+if(window.innerWidth<=760) { $('btn-menu-toggle').style.display=''; }
+window.addEventListener('resize', () => { $('btn-menu-toggle').style.display = window.innerWidth<=760 ? '' : 'none'; });
+
+// ═══════════════════ TORNEOS ═════════════════════════════════════════
+const trn = (function(){
+  let actual = null, lista = [], partidas = [];
+  const JUEGOS = {free_fire:'Free Fire',cod:'Call of Duty',valorant:'Valorant',fortnite:'Fortnite',minecraft:'Minecraft'};
+  const ESTADO_L = {borrador:'Borrador',inscripciones:'Inscr.',en_curso:'En curso',finalizado:'Final.'};
+  const ESTADO_C = {en_curso:'chip-en_curso',inscripciones:'chip-inscripciones',finalizado:'chip-finalizado',borrador:'chip-borrador'};
+
+  async function cargar(){
+    $('trn-lista').innerHTML='<li class="le-empty"><i class="fa-solid fa-circle-notch spin"></i> Cargando…</li>';
+    try { lista=await P.torneos.adminListar(PORTAL); renderLista(); }
+    catch(e){ $('trn-lista').innerHTML='<li class="le-empty" style="color:var(--err)">Error al cargar</li>'; }
   }
-}
 
-function renderLista() {
-  const ul = document.getElementById('lista-torneos');
-  if (!listaTorneos.length) { ul.innerHTML = '<li class="tz-empty">Sin torneos aún. Crea uno →</li>'; return; }
-  const ESTADO_CLS = { en_curso:'est-en_curso', inscripciones:'est-inscripciones', finalizado:'est-finalizado', borrador:'est-borrador' };
-  const ESTADO_L   = { en_curso:'En curso', inscripciones:'Inscr.', finalizado:'Final.', borrador:'Borrador' };
-  ul.innerHTML = listaTorneos.map(t => `
-    <li onclick="seleccionarTorneo(${t.id})" class="${torneoActual&&torneoActual.id===t.id?'activo':''}">
-      <span class="tz-li-nombre">${esc(t.nombre)}</span>
-      <span class="tz-estado ${ESTADO_CLS[t.estado]||'est-borrador'}">${ESTADO_L[t.estado]||t.estado}</span>
-    </li>`).join('');
-}
-
-window.seleccionarTorneo = function(id) {
-  torneoActual = listaTorneos.find(t => t.id === id);
-  if (!torneoActual) return;
-  renderLista();
-  cargarEditorInfo();
-  document.getElementById('editor-vacio').style.display    = 'none';
-  document.getElementById('editor-contenido').style.display = '';
-  document.getElementById('btn-borrar-torneo').style.display = '';
-  document.getElementById('editor-titulo').textContent      = torneoActual.nombre;
-  abrirTabById('info');
-};
-
-function cargarEditorInfo() {
-  const t = torneoActual;
-  const toLocal = iso => iso ? new Date(new Date(iso).getTime() - new Date(iso).getTimezoneOffset()*60000).toISOString().slice(0,16) : '';
-  document.getElementById('trn-nombre').value       = t.nombre || '';
-  document.getElementById('trn-juego').value        = t.juego || 'free_fire';
-  document.getElementById('trn-fecha-inicio').value = toLocal(t.fecha_inicio);
-  document.getElementById('trn-fecha-fin').value    = toLocal(t.fecha_fin);
-  document.getElementById('trn-estado').value       = t.estado || 'borrador';
-  document.getElementById('trn-descripcion').value  = t.descripcion || '';
-  document.getElementById('trn-logo-url').value     = t.logo_url || '';
-  document.getElementById('trn-banner-url').value   = t.banner_url || '';
-  document.getElementById('trn-publico').checked    = !!t.publico;
-  document.getElementById('trn-cupos').value        = t.config?.max_equipos || '';
-  const c = t.colores || {};
-  setColor('primary', c.primary || '#ffc659');
-  setColor('accent',  c.accent  || '#24d6a5');
-  setColor('bg',      c.bg      || '#003772');
-  const link = document.getElementById('trn-link-publico');
-  link.href = `../ver.html?id=${t.id}`;
-  link.style.display = '';
-  document.getElementById('status-info').className = 'tz-status';
-  actualizarPreview();
-}
-
-function setColor(key, val) {
-  document.getElementById(`trn-color-${key}`).value = val;
-  document.getElementById(`trn-color-${key}-hex`).value = val;
-  actualizarPreview();
-}
-
-['primary','accent','bg'].forEach(k => {
-  document.getElementById(`trn-color-${k}`).addEventListener('input', e => {
-    document.getElementById(`trn-color-${k}-hex`).value = e.target.value; actualizarPreview();
-  });
-  document.getElementById(`trn-color-${k}-hex`).addEventListener('input', e => {
-    if (/^#[0-9a-fA-F]{6}$/.test(e.target.value)) {
-      document.getElementById(`trn-color-${k}`).value = e.target.value; actualizarPreview();
-    }
-  });
-});
-['trn-nombre','trn-juego','trn-estado'].forEach(id => {
-  document.getElementById(id).addEventListener('input', actualizarPreview);
-  document.getElementById(id).addEventListener('change', actualizarPreview);
-});
-document.getElementById('trn-banner-url').addEventListener('input', actualizarPreview);
-
-function actualizarPreview() {
-  const primary = document.getElementById('trn-color-primary-hex').value || '#ffc659';
-  const bg      = document.getElementById('trn-color-bg-hex').value      || '#003772';
-  const nombre  = document.getElementById('trn-nombre').value            || 'Nombre del torneo';
-  const juego   = document.getElementById('trn-juego').value             || 'free_fire';
-  const estado  = document.getElementById('trn-estado').value            || 'borrador';
-  const JUEGOS  = { free_fire:'Free Fire', cod:'Call of Duty', valorant:'Valorant', fortnite:'Fortnite', minecraft:'Minecraft' };
-  const ESTADO_CSS = {
-    en_curso:      'background:rgba(36,214,165,.18);color:#24d6a5;border:1px solid rgba(36,214,165,.4)',
-    inscripciones: 'background:rgba(255,198,89,.18);color:#ffc659;border:1px solid rgba(255,198,89,.4)',
-    finalizado:    'background:rgba(0,132,133,.15);color:#008485;border:1px solid rgba(0,132,133,.4)',
-    borrador:      'background:rgba(0,42,96,.5);color:#5a84ad;border:1px solid rgba(0,132,133,.2)'
-  };
-  const ESTADO_L = { en_curso:'En curso', inscripciones:'Inscripciones', finalizado:'Finalizado', borrador:'Borrador' };
-  const banner  = document.getElementById('trn-banner-url').value;
-  const prevBan = document.getElementById('prev-banner');
-  if (banner) {
-    prevBan.style.backgroundImage = `url(${banner})`;
-    prevBan.style.backgroundSize = 'cover'; prevBan.style.backgroundPosition = 'center'; prevBan.innerHTML = '';
-  } else {
-    prevBan.style.backgroundImage = '';
-    prevBan.style.background = `linear-gradient(135deg, ${bg}, #008485)`;
-    prevBan.innerHTML = `<i class="fa-solid fa-trophy" style="font-size:2rem;color:${primary};opacity:.6"></i>`;
+  function renderLista(){
+    if(!lista.length){$('trn-lista').innerHTML='<li class="le-empty">Sin torneos. Crea uno →</li>';return;}
+    $('trn-lista').innerHTML=lista.map(t=>`
+      <li class="le-item${actual&&actual.id===t.id?' on':''}" onclick="trn.select(${t.id})">
+        <span class="le-item-n">${esc(t.nombre)}</span>
+        <span class="chip ${ESTADO_C[t.estado]||'chip-borrador'}">${ESTADO_L[t.estado]||t.estado}</span>
+      </li>`).join('');
   }
-  document.getElementById('prev-body').style.background = bg;
-  document.getElementById('prev-nombre').style.color    = primary;
-  document.getElementById('prev-nombre').textContent    = nombre;
-  document.getElementById('prev-meta').textContent      = JUEGOS[juego] || juego;
-  const chip = document.getElementById('prev-estado');
-  chip.textContent = ESTADO_L[estado] || estado;
-  chip.style.cssText = `font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .5rem;border-radius:20px;${ESTADO_CSS[estado]||ESTADO_CSS.borrador}`;
-}
 
-window.guardarTorneo = async function(e) {
-  e.preventDefault();
-  const st = document.getElementById('status-info');
-  mostrarStatus(st,'','<i class="fa-solid fa-circle-notch tz-spin"></i> Guardando…');
-  try {
-    const cupos = document.getElementById('trn-cupos').value;
-    const d = {
-      id:          torneoActual?.id ?? null,
-      nombre:      document.getElementById('trn-nombre').value.trim(),
-      juego:       document.getElementById('trn-juego').value,
-      fechaInicio: document.getElementById('trn-fecha-inicio').value ? new Date(document.getElementById('trn-fecha-inicio').value).toISOString() : null,
-      fechaFin:    document.getElementById('trn-fecha-fin').value    ? new Date(document.getElementById('trn-fecha-fin').value).toISOString()    : null,
-      estado:      document.getElementById('trn-estado').value,
-      descripcion: document.getElementById('trn-descripcion').value.trim() || null,
-      logoUrl:     document.getElementById('trn-logo-url').value.trim() || null,
-      bannerUrl:   document.getElementById('trn-banner-url').value.trim() || null,
-      publico:     document.getElementById('trn-publico').checked,
-      config:      { max_equipos: cupos ? parseInt(cupos) : null },
-      colores: {
-        primary: document.getElementById('trn-color-primary-hex').value,
-        accent:  document.getElementById('trn-color-accent-hex').value,
-        bg:      document.getElementById('trn-color-bg-hex').value
-      }
-    };
-    const res = await P.torneos.adminGuardar(PORTAL, d);
-    await cargarTorneos();
-    torneoActual = listaTorneos.find(t => t.id === (res?.id || torneoActual?.id));
-    document.getElementById('editor-titulo').textContent = torneoActual?.nombre || '';
-    mostrarStatus(st,'ok','Guardado correctamente');
-  } catch(err) { mostrarStatus(st,'err', err.message || 'Error al guardar'); }
-};
+  function select(id){
+    actual=lista.find(t=>t.id===id); if(!actual)return;
+    renderLista(); cargarInfo();
+    $('trn-vacio').style.display='none';
+    $('trn-contenido').style.display='';
+    $('trn-btn-del').style.display='';
+    $('trn-ed-titulo').textContent=actual.nombre;
+    tabById('info');
+  }
 
-window.borrarTorneo = async function() {
-  if (!torneoActual) return;
-  if (!confirm(`¿Borrar "${torneoActual.nombre}" y todos sus datos?`)) return;
-  try {
-    await P.torneos.adminBorrar(PORTAL, torneoActual.id);
-    torneoActual = null;
-    document.getElementById('editor-vacio').style.display    = '';
-    document.getElementById('editor-contenido').style.display = 'none';
-    document.getElementById('btn-borrar-torneo').style.display = 'none';
-    document.getElementById('editor-titulo').textContent = 'Selecciona un torneo';
-    await cargarTorneos();
-  } catch(e) { alert('Error al borrar: ' + (e.message||'')); }
-};
-
-window.nuevoTorneo = function() {
-  torneoActual = null; renderLista();
-  document.getElementById('editor-vacio').style.display    = 'none';
-  document.getElementById('editor-contenido').style.display = '';
-  document.getElementById('btn-borrar-torneo').style.display = 'none';
-  document.getElementById('editor-titulo').textContent = 'Nuevo torneo';
-  abrirTabById('info');
-  ['trn-nombre','trn-descripcion','trn-logo-url','trn-banner-url','trn-cupos'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('trn-juego').value  = 'free_fire';
-  document.getElementById('trn-fecha-inicio').value = '';
-  document.getElementById('trn-fecha-fin').value    = '';
-  document.getElementById('trn-estado').value = 'borrador';
-  document.getElementById('trn-publico').checked = false;
-  setColor('primary','#ffc659'); setColor('accent','#24d6a5'); setColor('bg','#003772');
-  document.getElementById('trn-link-publico').style.display = 'none';
-  document.getElementById('status-info').className = 'tz-status';
-  actualizarPreview();
-};
-
-async function cargarEquipos() {
-  document.getElementById('tbody-equipos').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--tz-gray);padding:1rem"><i class="fa-solid fa-circle-notch tz-spin"></i></td></tr>';
-  try {
-    const equipos = await P.torneos.adminEquipos(PORTAL, torneoActual.id);
-    if (!equipos.length) { document.getElementById('tbody-equipos').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--tz-gray);padding:1rem">Sin equipos aún</td></tr>'; return; }
-    document.getElementById('tbody-equipos').innerHTML = equipos.map(eq => `<tr>
-      <td style="color:var(--tz-teal);font-size:.78rem">${eq.seed||'—'}</td>
-      <td><strong>${esc(eq.nombre)}</strong>${eq.grupo?` <span style="font-size:.72rem;color:var(--tz-gray)">[${esc(eq.grupo)}]</span>`:''}</td>
-      <td style="color:var(--tz-gray)">${esc(eq.grupo||'—')}</td>
-      <td style="font-size:.78rem;color:var(--tz-gray)">${esc(eq.contacto||'—')}</td>
-      <td style="text-align:right">
-        <button class="tz-del-btn" onclick="editarEquipo(${eq.id})"><i class="fa-solid fa-pen"></i></button>
-        <button class="tz-del-btn" onclick="borrarEquipo(${eq.id},'${esc(eq.nombre)}')"><i class="fa-solid fa-trash"></i></button>
-      </td></tr>`).join('');
-    window._equiposCache = equipos;
-  } catch(e) { document.getElementById('tbody-equipos').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#ff7070;padding:1rem">Error al cargar</td></tr>'; }
-}
-
-window.editarEquipo = function(id) {
-  const eq = (window._equiposCache||[]).find(e => e.id === id); if (!eq) return;
-  document.getElementById('eq-id').value      = eq.id;
-  document.getElementById('eq-nombre').value  = eq.nombre || '';
-  document.getElementById('eq-contacto').value= eq.contacto || '';
-  document.getElementById('eq-ig').value      = eq.ig || '';
-  document.getElementById('eq-grupo').value   = eq.grupo || '';
-  document.getElementById('eq-form-titulo').textContent = 'Editar equipo';
-};
-window.resetEquipoForm = function() {
-  ['eq-id','eq-nombre','eq-contacto','eq-ig','eq-grupo'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('eq-form-titulo').textContent = 'Agregar equipo';
-  document.getElementById('status-eq').className = 'tz-status';
-};
-window.guardarEquipo = async function(e) {
-  e.preventDefault();
-  const st = document.getElementById('status-eq');
-  mostrarStatus(st,'','<i class="fa-solid fa-circle-notch tz-spin"></i>');
-  try {
-    const id = document.getElementById('eq-id').value;
-    await P.torneos.adminEquipoGuardar(PORTAL, torneoActual.id, {
-      id: id ? Number(id) : null,
-      nombre:   document.getElementById('eq-nombre').value.trim(),
-      contacto: document.getElementById('eq-contacto').value.trim() || null,
-      ig:       document.getElementById('eq-ig').value.trim() || null,
-      grupo:    document.getElementById('eq-grupo').value.trim() || null
+  function cargarInfo(){
+    const t=actual;
+    $('t-nombre').value=t.nombre||'';
+    $('t-juego').value=t.juego||'free_fire';
+    $('t-fi').value=toLocal(t.fecha_inicio);
+    $('t-ff').value=toLocal(t.fecha_fin);
+    $('t-fecha-txt').value=t.config?.fecha_texto||'';
+    $('t-estado').value=t.estado||'borrador';
+    $('t-cupos').value=t.config?.max_equipos||'';
+    $('t-n-eq').value=t.config?.n_equipos||'';
+    const pago=!!(t.config?.pago||t.config?.precio);
+    $('t-pago').checked=pago;
+    setPrecioInput('t-precio-val','t-precio-mon','t-precio-wrap',t.config?.precio||'');
+    $('t-precio-wrap').style.display=pago?'':'none';
+    $('t-metodo').value=t.config?.metodo_pago||'';
+    $('t-desc').value=t.descripcion||'';
+    $('t-logo').value=t.logo_url||'';
+    $('t-banner').value=t.banner_url||'';
+    $('t-pub').checked=!!t.publico;
+    const c=t.colores||{};
+    ['pri','acc','bg'].forEach((k,i)=>{
+      const val=[c.primary||'#D8C395',c.accent||'#F4EEDC',c.bg||'#0A0A0A'][i];
+      $('t-c-'+k).value=val; $('t-c-'+k+'-h').value=val;
     });
-    resetEquipoForm(); mostrarStatus(st,'ok','Guardado'); cargarEquipos();
-  } catch(err) { mostrarStatus(st,'err',err.message||'Error'); }
-};
-window.borrarEquipo = async function(id, nombre) {
-  if (!confirm(`¿Borrar equipo "${nombre}"?`)) return;
-  try { await P.torneos.adminEquipoBorrar(PORTAL, id); cargarEquipos(); }
-  catch(e) { alert('Error: ' + (e.message||'')); }
-};
+    $('t-link-pub').href=`../ver.html?id=${t.id}`;
+    $('t-link-pub').style.display='';
+    $('st-trn-info').className='st';
+  }
 
-async function cargarPartidas() {
-  document.getElementById('tbody-partidas').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--tz-gray);padding:1rem"><i class="fa-solid fa-circle-notch tz-spin"></i></td></tr>';
-  try {
-    listaPartidas = await P.torneos.adminPartidas(PORTAL, torneoActual.id);
-    const FASE_L = { grupos:'Grupos', cuartos:'Cuartos', semis:'Semis', final:'Final', gran_final:'Gran Final' };
-    document.getElementById('tbody-partidas').innerHTML = !listaPartidas.length
-      ? '<tr><td colspan="6" style="text-align:center;color:var(--tz-gray);padding:1rem">Sin partidas aún</td></tr>'
-      : listaPartidas.map(p => `<tr>
-          <td>${FASE_L[p.fase]||p.fase}</td>
+  async function guardar(e){
+    e.preventDefault();
+    st('st-trn-info','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      const d={
+        id:actual?.id??null, nombre:$('t-nombre').value.trim(), juego:$('t-juego').value,
+        fechaInicio:$('t-fi').value?new Date($('t-fi').value).toISOString():null,
+        fechaFin:$('t-ff').value?new Date($('t-ff').value).toISOString():null,
+        estado:$('t-estado').value, descripcion:$('t-desc').value.trim()||null,
+        logoUrl:$('t-logo').value.trim()||null, bannerUrl:$('t-banner').value.trim()||null,
+        publico:$('t-pub').checked,
+        config:{
+          max_equipos:$('t-cupos').value?parseInt($('t-cupos').value):null,
+          n_equipos:$('t-n-eq').value?parseInt($('t-n-eq').value):null,
+          fecha_texto:$('t-fecha-txt').value.trim()||null,
+          pago:$('t-pago').checked, precio:getPrecioStr('t-precio-val','t-precio-mon'),
+          metodo_pago:$('t-metodo').value.trim()||null
+        },
+        colores:{primary:$('t-c-pri-h').value,accent:$('t-c-acc-h').value,bg:$('t-c-bg-h').value}
+      };
+      const res=await P.torneos.adminGuardar(PORTAL,d);
+      await cargar();
+      actual=lista.find(t=>t.id===(res?.id||actual?.id));
+      $('trn-ed-titulo').textContent=actual?.nombre||'';
+      st('st-trn-info','ok','Guardado');
+    }catch(err){st('st-trn-info','err',err.message||'Error');}
+  }
+
+  async function borrar(){
+    if(!actual)return;
+    if(!confirm(`¿Borrar "${actual.nombre}" y todos sus datos?`))return;
+    try{
+      await P.torneos.adminBorrar(PORTAL,actual.id);
+      actual=null; $('trn-vacio').style.display=''; $('trn-contenido').style.display='none';
+      $('trn-btn-del').style.display='none'; $('trn-ed-titulo').textContent='Selecciona un torneo';
+      await cargar();
+    }catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  function nuevo(){
+    actual=null; renderLista();
+    $('trn-vacio').style.display='none'; $('trn-contenido').style.display='';
+    $('trn-btn-del').style.display='none'; $('trn-ed-titulo').textContent='Nuevo torneo';
+    tabById('info');
+    ['t-nombre','t-desc','t-logo','t-banner','t-cupos','t-n-eq','t-fecha-txt','t-precio-val','t-metodo'].forEach(id=>$(id).value='');
+    $('t-juego').value='free_fire'; $('t-estado').value='borrador'; $('t-pub').checked=false;
+    $('t-fi').value=''; $('t-ff').value='';
+    $('t-link-pub').style.display='none'; $('t-precio-wrap').style.display='none'; $('t-pago').checked=false;
+    $('st-trn-info').className='st';
+  }
+
+  function togglePago(el){$('t-precio-wrap').style.display=el.checked?'':'none';}
+
+  function tab(el){ tabById(el.dataset.t); }
+  function tabById(nombre){
+    document.querySelectorAll('#trn-tabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.t===nombre));
+    document.querySelectorAll('#trn-contenido .tab-panel').forEach(p=>p.classList.toggle('on',p.id==='trn-tab-'+nombre));
+    if(nombre==='equipos'&&actual) cargarEquipos();
+    if(nombre==='partidas'&&actual) cargarPartidas();
+    if(nombre==='logs'&&actual){cargarLogs();cargarPartidas();}
+  }
+
+  async function cargarEquipos(){
+    $('eq-tbody').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:1rem"><i class="fa-solid fa-circle-notch spin"></i></td></tr>';
+    try{
+      const eqs=await P.torneos.adminEquipos(PORTAL,actual.id);
+      window._eqs=eqs;
+      $('eq-tbody').innerHTML=!eqs.length?'<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:1rem">Sin equipos aún</td></tr>'
+        :eqs.map(eq=>`<tr>
+          <td style="color:var(--ga)">${eq.seed||'—'}</td>
+          <td><strong>${esc(eq.nombre)}</strong>${eq.grupo?` <span style="color:var(--gray);font-size:.72rem">[${esc(eq.grupo)}]</span>`:''}</td>
+          <td style="color:var(--gray)">${esc(eq.grupo||'—')}</td>
+          <td style="color:var(--gray);font-size:.78rem">${esc(eq.contacto||'—')}</td>
+          <td style="text-align:right;white-space:nowrap">
+            <button class="tbl del" onclick="trn.editarEq(${eq.id})"><i class="fa-solid fa-pen"></i></button>
+            <button class="tbl del" onclick="trn.borrarEq(${eq.id},'${esc(eq.nombre)}')"><i class="fa-solid fa-trash"></i></button>
+          </td></tr>`).join('');
+    }catch(e){$('eq-tbody').innerHTML='<tr><td colspan="5" style="color:var(--err);padding:1rem;text-align:center">Error</td></tr>';}
+  }
+
+  function editarEq(id){const eq=(window._eqs||[]).find(e=>e.id===id);if(!eq)return;
+    $('eq-id').value=eq.id;$('eq-nombre').value=eq.nombre||'';$('eq-wa').value=eq.contacto||'';$('eq-ig').value=eq.ig||'';$('eq-grupo').value=eq.grupo||'';
+    $('eq-titulo').textContent='Editar equipo';}
+  function resetEq(){['eq-id','eq-nombre','eq-wa','eq-ig','eq-grupo'].forEach(id=>$(id).value='');$('eq-titulo').textContent='Agregar equipo';$('st-eq').className='st';}
+
+  async function guardarEq(e){
+    e.preventDefault();st('st-eq','','<i class="fa-solid fa-circle-notch spin"></i>');
+    try{
+      const id=$('eq-id').value;
+      await P.torneos.adminEquipoGuardar(PORTAL,actual.id,{
+        id:id?Number(id):null, nombre:$('eq-nombre').value.trim(),
+        contacto:$('eq-wa').value.trim()||null, ig:$('eq-ig').value.trim()||null,
+        grupo:$('eq-grupo').value.trim()||null
+      });
+      resetEq();st('st-eq','ok','Guardado');cargarEquipos();
+    }catch(err){st('st-eq','err',err.message||'Error');}
+  }
+
+  async function borrarEq(id,nombre){
+    if(!confirm(`¿Borrar equipo "${nombre}"?`))return;
+    try{await P.torneos.adminEquipoBorrar(PORTAL,id);cargarEquipos();}
+    catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  async function cargarPartidas(){
+    $('pt-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem"><i class="fa-solid fa-circle-notch spin"></i></td></tr>';
+    try{
+      partidas=await P.torneos.adminPartidas(PORTAL,actual.id);
+      const FASE={grupos:'Grupos',cuartos:'Cuartos',semis:'Semis',final:'Final',gran_final:'Gran Final'};
+      $('pt-tbody').innerHTML=!partidas.length?'<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem">Sin partidas</td></tr>'
+        :partidas.map(p=>`<tr>
+          <td>${FASE[p.fase]||p.fase}</td>
           <td style="text-align:center">${p.ronda}</td>
           <td style="text-align:center">${p.sala||'—'}</td>
-          <td><span class="tz-estado est-${p.estado}">${p.estado}</span></td>
-          <td style="text-align:center;font-size:.78rem;color:var(--tz-teal)">${p.n_resultados||0}</td>
-          <td style="text-align:right">
-            <button class="tz-del-btn" onclick="editarPartida(${p.id})"><i class="fa-solid fa-pen"></i></button>
-            <button class="tz-del-btn" onclick="borrarPartida(${p.id})"><i class="fa-solid fa-trash"></i></button>
+          <td><span class="chip chip-${p.estado}">${p.estado}</span></td>
+          <td style="text-align:center;color:var(--ga)">${p.n_resultados||0}</td>
+          <td style="text-align:right;white-space:nowrap">
+            <button class="tbl del" onclick="trn.editarPt(${p.id})"><i class="fa-solid fa-pen"></i></button>
+            <button class="tbl del" onclick="trn.borrarPt(${p.id})"><i class="fa-solid fa-trash"></i></button>
           </td></tr>`).join('');
-    const sel = document.getElementById('log-partida-sel');
-    const prev = sel.value;
-    sel.innerHTML = '<option value="">— Sin partida asociada —</option>' +
-      listaPartidas.map(p => `<option value="${p.id}">Ronda ${p.ronda} Sala ${p.sala||'?'} (${p.fase})</option>`).join('');
-    if (prev) sel.value = prev;
-  } catch(e) { document.getElementById('tbody-partidas').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ff7070;padding:1rem">Error al cargar</td></tr>'; }
-}
+      const sel=$('log-partida');
+      const prev=sel.value;
+      sel.innerHTML='<option value="">— Sin partida —</option>'+
+        partidas.map(p=>`<option value="${p.id}">R${p.ronda} S${p.sala||'?'} (${p.fase})</option>`).join('');
+      if(prev)sel.value=prev;
+    }catch(e){$('pt-tbody').innerHTML='<tr><td colspan="6" style="color:var(--err);padding:1rem;text-align:center">Error</td></tr>';}
+  }
 
-window.editarPartida = function(id) {
-  const p = listaPartidas.find(x => x.id === id); if (!p) return;
-  document.getElementById('pt-id').value    = p.id;
-  document.getElementById('pt-fase').value  = p.fase || 'grupos';
-  document.getElementById('pt-ronda').value = p.ronda || 1;
-  document.getElementById('pt-sala').value  = p.sala || '';
-  document.getElementById('pt-estado').value= p.estado || 'pendiente';
-  document.getElementById('pt-notas').value = p.notas || '';
-  document.getElementById('pt-form-titulo').textContent = 'Editar partida';
-};
-window.resetPartidaForm = function() {
-  document.getElementById('pt-id').value = '';
-  document.getElementById('pt-ronda').value = '1';
-  document.getElementById('pt-sala').value = '';
-  document.getElementById('pt-notas').value = '';
-  document.getElementById('pt-estado').value = 'pendiente';
-  document.getElementById('pt-form-titulo').textContent = 'Nueva partida';
-  document.getElementById('status-pt').className = 'tz-status';
-};
-window.guardarPartida = async function(e) {
-  e.preventDefault();
-  const st = document.getElementById('status-pt');
-  mostrarStatus(st,'','<i class="fa-solid fa-circle-notch tz-spin"></i>');
-  try {
-    const id = document.getElementById('pt-id').value;
-    await P.torneos.adminPartidaGuardar(PORTAL, torneoActual.id, {
-      id:     id ? Number(id) : null,
-      fase:   document.getElementById('pt-fase').value,
-      ronda:  parseInt(document.getElementById('pt-ronda').value) || 1,
-      sala:   document.getElementById('pt-sala').value ? parseInt(document.getElementById('pt-sala').value) : null,
-      estado: document.getElementById('pt-estado').value,
-      notas:  document.getElementById('pt-notas').value.trim() || null
+  function editarPt(id){const p=partidas.find(x=>x.id===id);if(!p)return;
+    $('pt-id').value=p.id;$('pt-fase').value=p.fase||'grupos';$('pt-ronda').value=p.ronda||1;
+    $('pt-sala').value=p.sala||'';$('pt-estado').value=p.estado||'pendiente';$('pt-notas').value=p.notas||'';
+    $('pt-titulo').textContent='Editar partida';}
+  function resetPt(){$('pt-id').value='';$('pt-ronda').value='1';$('pt-sala').value='';$('pt-notas').value='';$('pt-estado').value='pendiente';$('pt-titulo').textContent='Nueva partida';$('st-pt').className='st';}
+
+  async function guardarPt(e){
+    e.preventDefault();st('st-pt','','<i class="fa-solid fa-circle-notch spin"></i>');
+    try{
+      const id=$('pt-id').value;
+      await P.torneos.adminPartidaGuardar(PORTAL,actual.id,{
+        id:id?Number(id):null, fase:$('pt-fase').value, ronda:parseInt($('pt-ronda').value)||1,
+        sala:$('pt-sala').value?parseInt($('pt-sala').value):null,
+        estado:$('pt-estado').value, notas:$('pt-notas').value.trim()||null
+      });
+      resetPt();st('st-pt','ok','Guardado');cargarPartidas();
+    }catch(err){st('st-pt','err',err.message||'Error');}
+  }
+
+  async function borrarPt(id){
+    if(!confirm('¿Borrar esta partida?'))return;
+    try{await P.torneos.adminPartidaBorrar(PORTAL,id);cargarPartidas();}
+    catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  const dd=$('log-drop');
+  dd.addEventListener('dragover',e=>{e.preventDefault();dd.classList.add('drag-over')});
+  dd.addEventListener('dragleave',()=>dd.classList.remove('drag-over'));
+  dd.addEventListener('drop',e=>{e.preventDefault();dd.classList.remove('drag-over');subirLog(e.dataTransfer.files)});
+
+  async function subirLog(files){
+    if(!actual||!files.length)return;
+    const file=files[0];st('st-log','','<i class="fa-solid fa-circle-notch spin"></i> Subiendo…');
+    try{
+      const contenido=await file.text();
+      const pid=$('log-partida').value||null;
+      await P.torneos.adminLog(PORTAL,actual.id,{partidaId:pid?Number(pid):null,nombre:file.name,contenido});
+      st('st-log','ok',`Log "${file.name}" subido`);$('log-file').value='';cargarLogs();
+    }catch(err){st('st-log','err',err.message||'Error');}
+  }
+
+  async function cargarLogs(){
+    $('log-tbody').innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:1rem"><i class="fa-solid fa-circle-notch spin"></i></td></tr>';
+    try{
+      const logs=await P.torneos.adminLogs(PORTAL,actual.id);
+      $('log-tbody').innerHTML=!logs.length?'<tr><td colspan="4" style="text-align:center;color:var(--gray);padding:1rem">Sin logs aún</td></tr>'
+        :logs.map(l=>`<tr>
+          <td>${esc(l.nombre_archivo||'sin nombre')}</td>
+          <td style="color:var(--gray);font-size:.78rem">${l.partida_id?`Partida ${l.partida_id}`:'—'}</td>
+          <td style="color:var(--gray);font-size:.78rem">${fmtFecha(l.creado)}</td>
+          <td>${l.procesado?'<span class="chip chip-finalizado">Procesado</span>':l.error_proceso?'<span style="color:var(--err)">Error</span>':'<span class="chip chip-borrador">Pendiente</span>'}</td>
+        </tr>`).join('');
+    }catch(e){$('log-tbody').innerHTML='<tr><td colspan="4" style="color:var(--err);padding:1rem;text-align:center">Error</td></tr>';}
+  }
+
+  return {cargar,select,nuevo,borrar,guardar,tab,togglePago,
+    editarEq,resetEq,guardarEq,borrarEq,
+    editarPt,resetPt,guardarPt,borrarPt,subirLog};
+})();
+
+// ═══════════════════ RELAMPAGOS ══════════════════════════════════════
+const rmp = (function(){
+  let actual=null, lista=[], eqs=[];
+  const ESTADO_L={activo:'Activo',en_juego:'En juego',finalizado:'Finalizado'};
+  const ESTADO_C={activo:'chip-activo',en_juego:'chip-en_juego',finalizado:'chip-finalizado'};
+
+  async function cargar(){
+    $('rmp-lista').innerHTML='<li class="le-empty"><i class="fa-solid fa-circle-notch spin"></i> Cargando…</li>';
+    try{lista=await P.relampagos.adminListar();renderLista();}
+    catch(e){$('rmp-lista').innerHTML='<li class="le-empty" style="color:var(--err)">Error al cargar</li>';}
+  }
+
+  function renderLista(){
+    if(!lista.length){$('rmp-lista').innerHTML='<li class="le-empty">Sin relampagos. Crea uno →</li>';return;}
+    $('rmp-lista').innerHTML=lista.map(r=>`
+      <li class="le-item${actual&&actual.id===r.id?' on':''}" onclick="rmp.select(${r.id})">
+        <span class="le-item-n">${esc(r.nombre)}</span>
+        <span class="chip ${ESTADO_C[r.estado]||'chip-borrador'}">${ESTADO_L[r.estado]||r.estado}</span>
+      </li>`).join('');
+  }
+
+  function select(id){
+    actual=lista.find(r=>r.id===id);if(!actual)return;
+    renderLista();cargarInfo();
+    $('rmp-vacio').style.display='none';$('rmp-contenido').style.display='';
+    $('rmp-btn-del').style.display='';$('rmp-ed-titulo').textContent=actual.nombre;
+    tabById('info');
+  }
+
+  function cargarInfo(){
+    const r=actual;
+    $('r-nombre').value=r.nombre||'';$('r-juego').value=r.juego||'free_fire';
+    $('r-estado').value=r.estado||'activo';$('r-fecha').value=toLocal(r.fecha);
+    $('r-premio').value=r.premio||'';$('r-metodo').value=r.metodo_pago||'';
+    $('r-pago').checked=!r.es_gratis;
+    setPrecioInput('r-costo-val','r-costo-mon','r-costo-wrap',r.costo||'');
+    $('r-costo-wrap').style.display=r.es_gratis?'none':'';
+    $('r-wa').value=r.org_wa||'';$('r-ig').value=r.org_ig||'';
+    $('r-logo').value=r.logo_url||'';$('r-banner').value=r.banner_url||'';
+    $('r-desc').value=r.descripcion||'';$('r-pub').checked=!!r.publico;
+    $('r-link-pub').href=`../relampagos.html?id=${r.id}`;$('r-link-pub').style.display='';
+    $('st-rmp-info').className='st';
+  }
+
+  async function guardar(e){
+    e.preventDefault();st('st-rmp-info','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      const d={
+        id:actual?.id??null, portal:'corp', nombre:$('r-nombre').value.trim(), juego:$('r-juego').value,
+        estado:$('r-estado').value, descripcion:$('r-desc').value.trim()||null,
+        premio:$('r-premio').value.trim()||null, metodo_pago:$('r-metodo').value.trim()||null,
+        es_gratis:!$('r-pago').checked, costo:getPrecioStr('r-costo-val','r-costo-mon'),
+        org_wa:$('r-wa').value.trim()||null, org_ig:$('r-ig').value.trim()||null,
+        logo_url:$('r-logo').value.trim()||null, banner_url:$('r-banner').value.trim()||null,
+        publico:$('r-pub').checked, fecha:$('r-fecha').value?new Date($('r-fecha').value).toISOString():null
+      };
+      const res=await P.relampagos.adminGuardar(d);
+      await cargar(); actual=lista.find(r=>r.id===(res?.id||actual?.id));
+      $('rmp-ed-titulo').textContent=actual?.nombre||'';
+      st('st-rmp-info','ok','Guardado');
+    }catch(err){st('st-rmp-info','err',err.message||'Error');}
+  }
+
+  async function borrar(){
+    if(!actual)return;
+    if(!confirm(`¿Borrar "${actual.nombre}"?`))return;
+    try{
+      await P.relampagos.adminBorrar(actual.id);
+      actual=null;$('rmp-vacio').style.display='';$('rmp-contenido').style.display='none';
+      $('rmp-btn-del').style.display='none';$('rmp-ed-titulo').textContent='Selecciona un relámpago';
+      await cargar();
+    }catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  function nuevo(){
+    actual=null;renderLista();
+    $('rmp-vacio').style.display='none';$('rmp-contenido').style.display='';
+    $('rmp-btn-del').style.display='none';$('rmp-ed-titulo').textContent='Nuevo relámpago';
+    tabById('info');
+    ['r-nombre','r-premio','r-metodo','r-costo-val','r-wa','r-ig','r-logo','r-banner','r-desc'].forEach(id=>$(id).value='');
+    $('r-juego').value='free_fire';$('r-estado').value='activo';$('r-fecha').value='';
+    $('r-pago').checked=false;$('r-costo-wrap').style.display='none';$('r-pub').checked=true;
+    $('r-link-pub').style.display='none';$('st-rmp-info').className='st';
+  }
+
+  function togglePago(el){$('r-costo-wrap').style.display=el.checked?'':'none';}
+
+  function tab(el){tabById(el.dataset.r);}
+  function tabById(nombre){
+    document.querySelectorAll('#rmp-contenido .tab').forEach(t=>t.classList.toggle('on',t.dataset.r===nombre));
+    document.querySelectorAll('#rmp-contenido .tab-panel').forEach(p=>p.classList.toggle('on',p.id==='rmp-tab-'+nombre));
+    if(nombre==='resultados'&&actual)cargarEqs();
+  }
+
+  async function cargarEqs(){
+    $('rq-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem"><i class="fa-solid fa-circle-notch spin"></i></td></tr>';
+    try{
+      eqs=await P.relampagos.adminEquipos(actual.id);
+      renderPodio();
+      $('rq-tbody').innerHTML=!eqs.length?'<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:1rem">Sin equipos aún</td></tr>'
+        :eqs.map(eq=>`<tr>
+          <td style="font-weight:700;color:${eq.puesto<=3&&eq.puesto>0?'#FFD54A':'var(--ga)'}">${eq.puesto>0?'#'+eq.puesto:'—'}</td>
+          <td style="font-weight:700">${esc(eq.nombre)}${eq.logo_url?` <img src="${esc(eq.logo_url)}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;object-fit:cover" alt="">`:''}</td>
+          <td>${eq.puntos}</td><td>${eq.kills}</td>
+          <td style="font-size:.75rem;color:var(--gray)">${[eq.jugador1,eq.jugador2,eq.jugador3,eq.jugador4].filter(Boolean).join(', ')||'—'}</td>
+          <td style="text-align:right;white-space:nowrap">
+            <button class="tbl del" onclick="rmp.editarEq(${eq.id})"><i class="fa-solid fa-pen"></i></button>
+            <button class="tbl del" onclick="rmp.borrarEq(${eq.id},'${esc(eq.nombre)}')"><i class="fa-solid fa-trash"></i></button>
+          </td></tr>`).join('');
+    }catch(e){$('rq-tbody').innerHTML='<tr><td colspan="6" style="color:var(--err);padding:1rem;text-align:center">Error</td></tr>';}
+  }
+
+  function renderPodio(){
+    const top=eqs.filter(e=>e.puesto>0&&e.puesto<=3).sort((a,b)=>a.puesto-b.puesto);
+    const pod=$('rmp-podio');
+    if(!top.length){pod.style.display='none';return;}
+    pod.style.display='flex';
+    const NUMS=['1°','2°','3°'];
+    pod.innerHTML=[0,1,2].map(i=>{
+      const e=top.find(x=>x.puesto===(i+1));
+      if(!e)return`<div class="pod-step"><div class="pod-num pod-num${i+1<=1?'1':''}">${NUMS[i]}</div></div>`;
+      return`<div class="pod-step">
+        <div class="pod-logo">${e.logo_url?`<img src="${esc(e.logo_url)}" alt="">`:'<i class="fa-solid fa-users"></i>'}</div>
+        <div class="pod-num${i===0?' p1':''}">${NUMS[i]}</div>
+        <div class="pod-name">${esc(e.nombre)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function editarEq(id){const eq=eqs.find(e=>e.id===id);if(!eq)return;
+    $('rq-id').value=eq.id;$('rq-nombre').value=eq.nombre||'';$('rq-logo').value=eq.logo_url||'';
+    $('rq-puesto').value=eq.puesto||0;$('rq-puntos').value=eq.puntos||0;$('rq-kills').value=eq.kills||0;
+    $('rq-j1').value=eq.jugador1||'';$('rq-j2').value=eq.jugador2||'';
+    $('rq-j3').value=eq.jugador3||'';$('rq-j4').value=eq.jugador4||'';
+    $('rq-titulo').textContent='Editar equipo';}
+
+  function resetEq(){$('rq-id').value='';$('rq-nombre').value='';$('rq-logo').value='';
+    $('rq-puesto').value='0';$('rq-puntos').value='0';$('rq-kills').value='0';
+    ['rq-j1','rq-j2','rq-j3','rq-j4'].forEach(id=>$(id).value='');
+    $('rq-titulo').textContent='Agregar equipo';$('st-rq').className='st';}
+
+  async function guardarEq(e){
+    e.preventDefault();st('st-rq','','<i class="fa-solid fa-circle-notch spin"></i>');
+    try{
+      const id=$('rq-id').value;
+      await P.relampagos.adminEquipoGuardar({
+        id:id?Number(id):null, relampago_id:actual.id,
+        nombre:$('rq-nombre').value.trim(), logo_url:$('rq-logo').value.trim()||null,
+        puesto:parseInt($('rq-puesto').value)||0, puntos:parseInt($('rq-puntos').value)||0,
+        kills:parseInt($('rq-kills').value)||0,
+        jugador1:$('rq-j1').value.trim()||null, jugador2:$('rq-j2').value.trim()||null,
+        jugador3:$('rq-j3').value.trim()||null, jugador4:$('rq-j4').value.trim()||null
+      });
+      resetEq();st('st-rq','ok','Guardado');cargarEqs();
+    }catch(err){st('st-rq','err',err.message||'Error');}
+  }
+
+  async function borrarEq(id,nombre){
+    if(!confirm(`¿Borrar equipo "${nombre}"?`))return;
+    try{await P.relampagos.adminEquipoBorrar(id);cargarEqs();}
+    catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  return{cargar,select,nuevo,borrar,guardar,tab,togglePago,editarEq,resetEq,guardarEq,borrarEq};
+})();
+
+// ═══════════════════ ALIADOS ═════════════════════════════════════════
+const ali = (function(){
+  let actual=null, lista=[];
+
+  async function cargar(){
+    $('ali-lista').innerHTML='<li class="le-empty"><i class="fa-solid fa-circle-notch spin"></i> Cargando…</li>';
+    try{lista=await P.eventosAliados.adminListar();renderLista();}
+    catch(e){$('ali-lista').innerHTML='<li class="le-empty" style="color:var(--err)">Error al cargar</li>';}
+  }
+
+  function renderLista(){
+    if(!lista.length){$('ali-lista').innerHTML='<li class="le-empty">Sin eventos. Crea uno →</li>';return;}
+    $('ali-lista').innerHTML=lista.map(a=>`
+      <li class="le-item${actual&&actual.id===a.id?' on':''}" onclick="ali.select(${a.id})">
+        <span class="le-item-n">${esc(a.nombre)}</span>
+        <span class="chip ${a.activo?'chip-activo':'chip-borrador'}">${a.activo?'Activo':'Inactivo'}</span>
+      </li>`).join('');
+  }
+
+  function select(id){
+    actual=lista.find(a=>a.id===id);if(!actual)return;
+    renderLista();
+    $('ali-vacio').style.display='none';$('ali-contenido').style.display='';
+    $('ali-btn-del').style.display='';$('ali-ed-titulo').textContent=actual.nombre;
+    const a=actual;
+    $('a-nombre').value=a.nombre||'';$('a-juego').value=a.juego||'';$('a-fecha').value=a.fecha||'';
+    $('a-premio').value=a.premio||'';$('a-pago').checked=!a.es_gratis;
+    setPrecioInput('a-costo-val','a-costo-mon','a-costo-wrap',a.costo||'');
+    $('a-costo-wrap').style.display=a.es_gratis?'none':'';
+    $('a-ig').value=a.ig||'';$('a-wa').value=a.whatsapp||'';$('a-discord').value=a.discord||'';
+    $('a-logo').value=a.logo_url||'';$('a-banner').value=a.banner_url||'';
+    $('a-desc').value=a.descripcion||'';$('a-orden').value=a.orden||0;
+    $('a-activo').checked=!!a.activo;$('st-ali').className='st';
+  }
+
+  async function guardar(e){
+    e.preventDefault();st('st-ali','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      const d={id:actual?.id??null,portal:'corp',nombre:$('a-nombre').value.trim(),juego:$('a-juego').value.trim()||null,
+        fecha:$('a-fecha').value||null,premio:$('a-premio').value.trim()||null,
+        es_gratis:!$('a-pago').checked,costo:getPrecioStr('a-costo-val','a-costo-mon'),
+        ig:$('a-ig').value.trim()||null,whatsapp:$('a-wa').value.trim()||null,discord:$('a-discord').value.trim()||null,
+        logo_url:$('a-logo').value.trim()||null,banner_url:$('a-banner').value.trim()||null,
+        descripcion:$('a-desc').value.trim()||null,orden:parseInt($('a-orden').value)||0,activo:$('a-activo').checked};
+      const res=await P.eventosAliados.adminGuardar(d);
+      await cargar();actual=lista.find(a=>a.id===(res?.id||actual?.id));
+      $('ali-ed-titulo').textContent=actual?.nombre||'';
+      st('st-ali','ok','Guardado');
+    }catch(err){st('st-ali','err',err.message||'Error');}
+  }
+
+  async function borrar(){
+    if(!actual)return;
+    if(!confirm(`¿Borrar "${actual.nombre}"?`))return;
+    try{
+      await P.eventosAliados.adminBorrar(actual.id);
+      actual=null;$('ali-vacio').style.display='';$('ali-contenido').style.display='none';
+      $('ali-btn-del').style.display='none';$('ali-ed-titulo').textContent='Selecciona un evento';
+      await cargar();
+    }catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  function nuevo(){
+    actual=null;renderLista();
+    $('ali-vacio').style.display='none';$('ali-contenido').style.display='';
+    $('ali-btn-del').style.display='none';$('ali-ed-titulo').textContent='Nuevo evento aliado';
+    ['a-nombre','a-juego','a-fecha','a-premio','a-costo-val','a-ig','a-wa','a-discord','a-logo','a-banner','a-desc'].forEach(id=>$(id).value='');
+    $('a-pago').checked=false;$('a-costo-wrap').style.display='none';$('a-orden').value='0';$('a-activo').checked=true;
+    $('st-ali').className='st';
+  }
+
+  function togglePago(el){$('a-costo-wrap').style.display=el.checked?'':'none';}
+
+  return{cargar,select,nuevo,borrar,guardar,togglePago};
+})();
+
+// ═══════════════════ CALENDARIO ══════════════════════════════════════
+const cal = (function(){
+  async function cargar(){
+    try{
+      const res=await P.db().from('sitio_config').select('valor').eq('clave','corp_calendar_img').maybeSingle();
+      const url=res?.data?.valor?.url||'';
+      if(url){$('cal-url').value=url;previewUrl(url);}
+    }catch(e){}
+  }
+
+  function preview(input){
+    const file=input.files[0];if(!file)return;
+    const url=URL.createObjectURL(file);
+    const img=$('cal-prev');img.src=url;img.style.display='block';
+    $('cal-url').value='(archivo local — sube a tu host y pega la URL)';
+  }
+
+  function previewUrl(url){
+    const img=$('cal-prev');
+    if(url&&url.startsWith('http')){img.src=url;img.style.display='block';}
+    else img.style.display='none';
+  }
+
+  async function guardar(){
+    const url=$('cal-url').value.trim();
+    st('st-cal','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      await P.sitio.guardar('corp_calendar_img',{url});
+      st('st-cal','ok','Guardado');
+    }catch(e){st('st-cal','err',e.message||'Error');}
+  }
+
+  async function limpiar(){
+    if(!confirm('¿Limpiar la imagen del calendario?'))return;
+    try{
+      await P.sitio.guardar('corp_calendar_img',{url:null});
+      $('cal-url').value='';$('cal-prev').style.display='none';
+      st('st-cal','ok','Limpiado');
+    }catch(e){st('st-cal','err',e.message||'Error');}
+  }
+
+  const zone=$('cal-zone');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){const i=$('cal-file');i.files=e.dataTransfer.files;preview(i);}});
+
+  return{cargar,preview,previewUrl,guardar,limpiar};
+})();
+
+// ═══════════════════ SUBPÁGINAS ══════════════════════════════════════
+const sub = (function(){
+  let actual=null, lista=[];
+
+  async function cargar(){
+    $('sub-lista').innerHTML='<li class="le-empty"><i class="fa-solid fa-circle-notch spin"></i> Cargando…</li>';
+    try{lista=await P.corpSubpaginas.adminListar();renderLista();}
+    catch(e){$('sub-lista').innerHTML='<li class="le-empty" style="color:var(--err)">Error al cargar</li>';}
+  }
+
+  function renderLista(){
+    if(!lista.length){$('sub-lista').innerHTML='<li class="le-empty">Sin subpáginas. Crea una →</li>';return;}
+    $('sub-lista').innerHTML=lista.map(s=>`
+      <li class="le-item${actual&&actual.id===s.id?' on':''}" onclick="sub.select(${s.id})">
+        <span class="le-item-n">${esc(s.nombre)}</span>
+        <span class="chip ${s.activo?'chip-activo':'chip-borrador'}">${s.activo?'Activa':'Inactiva'}</span>
+      </li>`).join('');
+  }
+
+  function select(id){
+    actual=lista.find(s=>s.id===id);if(!actual)return;
+    renderLista();
+    $('sub-vacio').style.display='none';$('sub-contenido').style.display='';
+    $('sub-btn-del').style.display='';$('sub-ed-titulo').textContent=actual.nombre;
+    const s=actual;
+    $('s-nombre').value=s.nombre||'';$('s-slug').value=s.slug||'';$('s-desc').value=s.descripcion||'';
+    $('s-logo').value=s.logo_url||'';$('s-banner').value=s.banner_url||'';
+    syncColor2('pri',s.color_primary||'#D8C395');syncColor2('acc',s.color_accent||'#F4EEDC');syncColor2('bg',s.color_bg||'#0A0A0A');
+    $('s-activo').checked=!!s.activo;
+    $('s-link-pub').href=`../subpagina.html?p=${encodeURIComponent(s.slug)}`;$('s-link-pub').style.display='';
+    $('st-sub').className='st';actualizarPreview();
+  }
+
+  function syncColor2(k,val){$('s-c-'+k).value=val;$('s-c-'+k+'-h').value=val;actualizarPreview();}
+  function syncColor(k,el){$('s-c-'+k+'-h').value=el.value;actualizarPreview();}
+  function syncHex(k,el){if(/^#[0-9a-fA-F]{6}$/.test(el.value)){$('s-c-'+k).value=el.value;actualizarPreview();}}
+
+  function actualizarPreview(){
+    const pri=$('s-c-pri-h').value||'#D8C395';
+    const bg=$('s-c-bg-h').value||'#0A0A0A';
+    const nombre=$('s-nombre').value||'Nombre de la subpágina';
+    const slug=$('s-slug').value||'slug';
+    const logo=$('s-logo').value;
+    $('sub-prev-bar').style.background=pri;
+    $('sub-prev-name').textContent=nombre;
+    $('sub-prev-url').textContent='/subpagina?p='+slug;
+    const li=$('sub-prev-logo');
+    if(logo){li.src=logo;li.style.display='';} else li.style.display='none';
+    $('sub-preview').style.background=bg+'22';
+    $('sub-preview').style.borderColor=pri+'44';
+  }
+
+  async function guardar(e){
+    e.preventDefault();st('st-sub','','<i class="fa-solid fa-circle-notch spin"></i> Guardando…');
+    try{
+      const d={id:actual?.id??null,portal:'corp',nombre:$('s-nombre').value.trim(),slug:$('s-slug').value.trim(),
+        descripcion:$('s-desc').value.trim()||null,logo_url:$('s-logo').value.trim()||null,
+        banner_url:$('s-banner').value.trim()||null,color_primary:$('s-c-pri-h').value,
+        color_accent:$('s-c-acc-h').value,color_bg:$('s-c-bg-h').value,activo:$('s-activo').checked};
+      const res=await P.corpSubpaginas.adminGuardar(d);
+      await cargar();actual=lista.find(s=>s.id===(res?.id||actual?.id));
+      $('sub-ed-titulo').textContent=actual?.nombre||'';
+      st('st-sub','ok','Guardado');
+    }catch(err){st('st-sub','err',err.message||'Error');}
+  }
+
+  async function borrar(){
+    if(!actual)return;
+    if(!confirm(`¿Borrar "${actual.nombre}"?`))return;
+    try{
+      await P.corpSubpaginas.adminBorrar(actual.id);
+      actual=null;$('sub-vacio').style.display='';$('sub-contenido').style.display='none';
+      $('sub-btn-del').style.display='none';$('sub-ed-titulo').textContent='Selecciona una subpágina';
+      await cargar();
+    }catch(e){alert('Error: '+(e.message||''));}
+  }
+
+  function nuevo(){
+    actual=null;renderLista();
+    $('sub-vacio').style.display='none';$('sub-contenido').style.display='';
+    $('sub-btn-del').style.display='none';$('sub-ed-titulo').textContent='Nueva subpágina';
+    ['s-nombre','s-slug','s-desc','s-logo','s-banner'].forEach(id=>$(id).value='');
+    syncColor2('pri','#D8C395');syncColor2('acc','#F4EEDC');syncColor2('bg','#0A0A0A');
+    $('s-activo').checked=true;$('s-link-pub').style.display='none';$('st-sub').className='st';actualizarPreview();
+  }
+
+  return{cargar,select,nuevo,borrar,guardar,syncColor,syncHex,actualizarPreview};
+})();
+
+// ═══════════════════ CANALES & ACTIVIDADES ═══════════════════════════
+const chan = (function(){
+  const KEY_CH='corp_canales', KEY_AC='corp_actividades';
+  const TIPOS=['discord','whatsapp','telegram','instagram','tiktok','youtube','general'];
+
+  function leer(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch{return def;}}
+  function guardarLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+  function cargar(){
+    const chs=leer(KEY_CH,[]);const acs=leer(KEY_AC,[]);
+    renderCanales(chs);renderActs(acs);
+  }
+
+  function renderCanales(chs){
+    const wrap=$('chan-lista');
+    wrap.innerHTML=chs.map((c,i)=>`
+      <div style="display:flex;gap:6px;align-items:center;background:var(--b3);border:1px solid var(--ln);border-radius:5px;padding:.5rem .7rem">
+        <select style="width:120px;min-height:34px;padding:5px 7px">${TIPOS.map(t=>`<option value="${t}"${c.tipo===t?' selected':''}>${t}</option>`).join('')}</select>
+        <input value="${esc(c.nombre||'')}" placeholder="Nombre" style="flex:1;min-height:34px">
+        <input value="${esc(c.descripcion||'')}" placeholder="Descripción" style="flex:1.5;min-height:34px">
+        <input value="${esc(c.link||'')}" placeholder="URL del link" style="flex:2;min-height:34px">
+        <button onclick="chan.delCanal(${i})" class="btn btn-r btn-sm" style="flex-shrink:0"><i class="fa-solid fa-trash"></i></button>
+      </div>`).join('');
+  }
+
+  function renderActs(acs){
+    const wrap=$('act-lista');
+    wrap.innerHTML=acs.map((a,i)=>`
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--b3);border:1px solid var(--ln);border-radius:5px;padding:.5rem .7rem">
+        <input value="${esc(a.nombre||'')}" placeholder="Nombre" style="flex:2;min-width:120px;min-height:34px">
+        <select style="width:80px;min-height:34px;padding:5px 7px"><option value="gratis"${a.tipo==='gratis'?' selected':''}>Gratis</option><option value="pago"${a.tipo==='pago'?' selected':''}>Pago</option></select>
+        <input value="${esc(parsePrecio(a.precio).val||'')}" placeholder="Monto" type="number" min="0" step="any" style="flex:1;min-width:70px;min-height:34px">
+        <select style="width:72px;min-height:34px;padding:5px 5px"><option value="COP"${(parsePrecio(a.precio).mon||'COP')==='COP'?' selected':''}>COP</option><option value="USD"${parsePrecio(a.precio).mon==='USD'?' selected':''}>USD</option></select>
+        <input value="${esc(a.link||'')}" placeholder="URL" style="flex:2;min-width:100px;min-height:34px">
+        <button onclick="chan.delAct(${i})" class="btn btn-r btn-sm" style="flex-shrink:0"><i class="fa-solid fa-trash"></i></button>
+      </div>`).join('');
+  }
+
+  function addCanal(){
+    const chs=leer(KEY_CH,[]);chs.push({tipo:'discord',nombre:'',descripcion:'',link:'#'});guardarLocal(KEY_CH,chs);renderCanales(chs);}
+  function delCanal(i){
+    const chs=leer(KEY_CH,[]);chs.splice(i,1);guardarLocal(KEY_CH,chs);renderCanales(chs);}
+
+  function addAct(){
+    const acs=leer(KEY_AC,[]);acs.push({nombre:'',tipo:'gratis',precio:'',link:'#'});guardarLocal(KEY_AC,acs);renderActs(acs);}
+  function delAct(i){
+    const acs=leer(KEY_AC,[]);acs.splice(i,1);guardarLocal(KEY_AC,acs);renderActs(acs);}
+
+  function guardar(){
+    const chs=[...$('chan-lista').querySelectorAll('div[style]')].map(row=>{
+      const sels=row.querySelectorAll('select,input');
+      return{tipo:sels[0].value,nombre:sels[1].value,descripcion:sels[2].value,link:sels[3].value};
     });
-    resetPartidaForm(); mostrarStatus(st,'ok','Guardado'); cargarPartidas();
-  } catch(err) { mostrarStatus(st,'err',err.message||'Error'); }
-};
-window.borrarPartida = async function(id) {
-  if (!confirm('¿Borrar esta partida y sus resultados?')) return;
-  try { await P.torneos.adminPartidaBorrar(PORTAL, id); cargarPartidas(); }
-  catch(e) { alert('Error: ' + (e.message||'')); }
-};
-
-document.getElementById('log-drop').addEventListener('dragover',  e => { e.preventDefault(); document.getElementById('log-drop').classList.add('drag-over'); });
-document.getElementById('log-drop').addEventListener('dragleave', () => document.getElementById('log-drop').classList.remove('drag-over'));
-document.getElementById('log-drop').addEventListener('drop', e => { e.preventDefault(); document.getElementById('log-drop').classList.remove('drag-over'); subirLog(e.dataTransfer.files); });
-
-window.subirLog = async function(files) {
-  if (!torneoActual || !files.length) return;
-  const file = files[0];
-  const st = document.getElementById('status-log');
-  mostrarStatus(st,'','<i class="fa-solid fa-circle-notch tz-spin"></i> Subiendo…');
-  try {
-    const contenido = await file.text();
-    const partidaId = document.getElementById('log-partida-sel').value || null;
-    await P.torneos.adminLog(PORTAL, torneoActual.id, {
-      partidaId: partidaId ? Number(partidaId) : null, nombre: file.name, contenido
+    const acs=[...$('act-lista').querySelectorAll('div[style]')].map(row=>{
+      const sels=row.querySelectorAll('input,select');
+      const precioStr=sels[2].value.trim()?fmtPrecio(sels[2].value,sels[3].value):'';
+      return{nombre:sels[0].value,tipo:sels[1].value,precio:precioStr,link:sels[4].value};
     });
-    mostrarStatus(st,'ok',`Log "${file.name}" subido`);
-    document.getElementById('log-file').value = '';
-    cargarLogs();
-  } catch(err) { mostrarStatus(st,'err',err.message||'Error al subir'); }
-};
+    guardarLocal(KEY_CH,chs);guardarLocal(KEY_AC,acs);
+    st('st-chan','ok','Guardado en este navegador. Recarga la página principal para ver cambios.');
+  }
 
-async function cargarLogs() {
-  document.getElementById('tbody-logs').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--tz-gray);padding:1rem"><i class="fa-solid fa-circle-notch tz-spin"></i></td></tr>';
-  try {
-    const logs = await P.torneos.adminLogs(PORTAL, torneoActual.id);
-    if (!logs.length) { document.getElementById('tbody-logs').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--tz-gray);padding:1rem">Sin logs aún</td></tr>'; return; }
-    document.getElementById('tbody-logs').innerHTML = logs.map(l => `<tr>
-      <td>${esc(l.nombre_archivo||'sin nombre')}</td>
-      <td style="color:var(--tz-gray);font-size:.78rem">${l.partida_id?`Partida ${l.partida_id}`:'—'}</td>
-      <td style="color:var(--tz-gray);font-size:.78rem">${new Date(l.creado).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
-      <td>${l.procesado?'<span class="tz-estado est-finalizado">Procesado</span>':l.error_proceso?'<span class="tz-estado" style="background:rgba(255,77,77,.12);color:#ff7070;border:1px solid rgba(255,77,77,.3)">Error</span>':'<span class="tz-estado est-pendiente">Pendiente</span>'}</td>
-    </tr>`).join('');
-  } catch(e) { document.getElementById('tbody-logs').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#ff7070;padding:1rem">Error al cargar</td></tr>'; }
-}
+  return{cargar,addCanal,delCanal,addAct,delAct,guardar};
+})();
 
-window.abrirTab = function(el) { abrirTabById(el.dataset.tab); };
-function abrirTabById(nombre) {
-  document.querySelectorAll('.tz-tab').forEach(t => t.classList.toggle('activo', t.dataset.tab === nombre));
-  document.querySelectorAll('.tz-tab-panel').forEach(p => p.classList.toggle('activo', p.id === 'tab-' + nombre));
-  if (nombre === 'equipos' && torneoActual)  cargarEquipos();
-  if (nombre === 'partidas' && torneoActual) cargarPartidas();
-  if (nombre === 'logs' && torneoActual)     { cargarLogs(); cargarPartidas(); }
-}
-
-function mostrarStatus(el, tipo, msg) {
-  el.innerHTML = msg;
-  el.className = 'tz-status' + (tipo ? ' ' + tipo : '');
-  if (tipo === 'ok') setTimeout(() => { if(el.className.includes('ok')) el.className='tz-status'; }, 3000);
-}
-
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tryAutoLogin);
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tryAutoLogin);
 else tryAutoLogin();
 </script>
 </body>
