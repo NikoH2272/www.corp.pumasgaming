@@ -160,6 +160,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .fg2{grid-template-columns:1fr}
   .fg2.t3{grid-template-columns:1fr}
 }
+/* ── Leyenda zonas horarias ── */
+.tz-hint{
+  margin-top:5px;font-size:.68rem;color:var(--gray);
+  display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;min-height:1rem;
+  font-family:'Michroma',sans-serif;letter-spacing:.04em;
+}
+.tz-hint span{background:rgba(216,195,149,.08);border:1px solid rgba(216,195,149,.15);border-radius:4px;padding:1px 6px;white-space:nowrap}
+.tz-hint span b{color:var(--g);font-weight:700;margin-right:2px}
 </style>
 </head>
 <body>
@@ -237,8 +245,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     </div>
                   </div>
                   <div class="fg2">
-                    <div class="fg"><label>Fecha inicio</label><input type="datetime-local" id="t-fi"></div>
-                    <div class="fg"><label>Fecha fin</label><input type="datetime-local" id="t-ff"></div>
+                    <div class="fg"><label>Fecha inicio</label><input type="datetime-local" id="t-fi"><div class="tz-hint" id="t-fi-tz"></div></div>
+                    <div class="fg"><label>Fecha fin</label><input type="datetime-local" id="t-ff"><div class="tz-hint" id="t-ff-tz"></div></div>
                   </div>
                   <div class="fg2">
                     <div class="fg"><label>Fecha aprox. inicio (texto)</label><input id="t-fecha-txt" placeholder="Ej: Enero 2027"></div>
@@ -418,7 +426,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
                         <option value="finalizado">Finalizado</option>
                       </select>
                     </div>
-                    <div class="fg"><label>Fecha</label><input type="datetime-local" id="r-fecha"></div>
+                    <div class="fg"><label>Fecha</label><input type="datetime-local" id="r-fecha"><div class="tz-hint" id="r-fecha-tz"></div></div>
                   </div>
                   <div class="fg2">
                     <div class="fg"><label>Premio</label><input id="r-premio" placeholder="Ej: $50.000 COP"></div>
@@ -703,8 +711,36 @@ function getPrecioStr(valId, monId){
   const n = $(valId).value.trim();
   return n ? fmtPrecio(n, $(monId).value) : null;
 }
-const fmtFecha = iso => iso ? new Date(iso).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtFecha = iso => iso ? new Date(iso).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'America/Bogota'}) : '—';
 const toLocal = iso => iso ? new Date(new Date(iso)-new Date(iso).getTimezoneOffset()*60000).toISOString().slice(0,16) : '';
+
+// Zonas horarias: COL · MEX · ARG
+function fmtZonas(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const t = tz => d.toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz});
+  const fechaDia = tz => d.toLocaleDateString('es', {day:'2-digit',month:'short',timeZone:tz});
+  const col = t('America/Bogota');
+  const mex = t('America/Mexico_City');
+  const arg = t('America/Argentina/Buenos_Aires');
+  const diaBase = fechaDia('America/Bogota');
+  const diaMex  = fechaDia('America/Mexico_City');
+  const diaArg  = fechaDia('America/Argentina/Buenos_Aires');
+  const sufMex  = diaMex !== diaBase ? ` ${diaMex}` : '';
+  const sufArg  = diaArg !== diaBase ? ` ${diaArg}` : '';
+  return `<span><b>COL</b>${col}</span><span><b>MEX</b>${mex}${sufMex}</span><span><b>ARG</b>${arg}${sufArg}</span>`;
+}
+function tzHint(inputId, hintId) {
+  const inp = $(inputId), hint = $(hintId);
+  if (!inp || !hint) return;
+  const actualizar = () => {
+    hint.innerHTML = inp.value ? fmtZonas(new Date(inp.value).toISOString()) : '';
+  };
+  inp.addEventListener('input', actualizar);
+  inp.addEventListener('change', actualizar);
+  actualizar();
+}
 function st(id,tipo,msg){const el=$(id);el.innerHTML=msg;el.className='st'+(tipo?' '+tipo:'');if(tipo==='ok')setTimeout(()=>{if(el.className.includes('ok'))el.className='st'},3000)}
 
 // ── AUTH ──────────────────────────────────────────────────────────────
@@ -780,8 +816,8 @@ const trn = (function(){
     const t=actual;
     $('t-nombre').value=t.nombre||'';
     $('t-juego').value=t.juego||'free_fire';
-    $('t-fi').value=toLocal(t.fecha_inicio);
-    $('t-ff').value=toLocal(t.fecha_fin);
+    $('t-fi').value=toLocal(t.fecha_inicio); $('t-fi-tz').innerHTML=fmtZonas(t.fecha_inicio||'');
+    $('t-ff').value=toLocal(t.fecha_fin);    $('t-ff-tz').innerHTML=fmtZonas(t.fecha_fin||'');
     $('t-fecha-txt').value=t.config?.fecha_texto||'';
     $('t-estado').value=t.estado||'borrador';
     $('t-cupos').value=t.config?.max_equipos||'';
@@ -1025,7 +1061,7 @@ const rmp = (function(){
   function cargarInfo(){
     const r=actual;
     $('r-nombre').value=r.nombre||'';$('r-juego').value=r.juego||'free_fire';
-    $('r-estado').value=r.estado||'activo';$('r-fecha').value=toLocal(r.fecha);
+    $('r-estado').value=r.estado||'activo';$('r-fecha').value=toLocal(r.fecha);$('r-fecha-tz').innerHTML=fmtZonas(r.fecha||'');
     $('r-premio').value=r.premio||'';$('r-metodo').value=r.metodo_pago||'';
     $('r-pago').checked=!r.es_gratis;
     setPrecioInput('r-costo-val','r-costo-mon','r-costo-wrap',r.costo||'');
@@ -1438,8 +1474,14 @@ const chan = (function(){
   return{cargar,addCanal,delCanal,addAct,delAct,guardar};
 })();
 
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tryAutoLogin);
-else tryAutoLogin();
+function initTZHints(){
+  tzHint('t-fi','t-fi-tz');
+  tzHint('t-ff','t-ff-tz');
+  tzHint('r-fecha','r-fecha-tz');
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{tryAutoLogin();initTZHints();});
+else { tryAutoLogin(); initTZHints(); }
 </script>
 </body>
 </html>

@@ -261,6 +261,9 @@
 .cp-card-nombre { font-weight: 700; font-size: .95rem; color: var(--cp-text); }
 .cp-card-meta { font-size: .74rem; color: var(--cp-gray); display: flex; gap: .6rem; flex-wrap: wrap; }
 .cp-card-meta i { color: var(--cp-amber); }
+.cp-tz-row { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: 3px; }
+.cp-tz-tag { font-size: .64rem; background: rgba(216,195,149,.07); border: 1px solid rgba(216,195,149,.17); border-radius: 4px; padding: 1px 5px; white-space: nowrap; font-family: 'Michroma', sans-serif; }
+.cp-tz-tag b { color: var(--cp-gold); font-weight: 700; margin-right: 3px; }
 .cp-card-badge {
   display: inline-flex; align-items: center; gap: .3rem;
   font-size: .67rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
@@ -571,7 +574,19 @@
   }
   function fmtFecha(iso, opts) {
     if (!iso) return null;
-    return new Date(iso).toLocaleDateString('es', opts || { day:'2-digit', month:'short', year:'numeric' });
+    return new Date(iso).toLocaleDateString('es', { ...(opts || { day:'2-digit', month:'short', year:'numeric' }), timeZone:'America/Bogota' });
+  }
+  function fmtZonas(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    // Solo mostrar si tiene componente de hora (no medianoche exacta UTC)
+    const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0;
+    if (!hasTime) return '';
+    const t = tz => d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz});
+    return `<span class="cp-tz-tag"><b>COL</b>${t('America/Bogota')}</span>`+
+           `<span class="cp-tz-tag"><b>MEX</b>${t('America/Mexico_City')}</span>`+
+           `<span class="cp-tz-tag"><b>ARG</b>${t('America/Argentina/Buenos_Aires')}</span>`;
   }
 
   async function cargar() {
@@ -668,6 +683,7 @@
           ${juego ? `<span><i class="fa-solid fa-gamepad"></i>${esc(juego)}</span>` : ''}
           ${fi    ? `<span><i class="fa-regular fa-calendar"></i>${esc(fi)}</span>` : ''}
         </div>
+        ${t.fecha_inicio ? `<div class="cp-tz-row">${fmtZonas(t.fecha_inicio)}</div>` : ''}
         ${t.descripcion ? `<div style="font-size:.77rem;color:var(--cp-gray);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${esc(t.descripcion)}</div>` : ''}
         ${badge}
       </div>
