@@ -725,7 +725,7 @@ async function tryAutoLogin() {
 }
 
 function mostrarApp(ses) {
-  $('ad-app').style.display   = '';
+  $('ad-app').style.display   = 'flex';
   $('ad-usuario').textContent = ses?.nombre || ses?.usuario || '—';
   trn.cargar(); rmp.cargar(); ali.cargar(); sub.cargar(); cal.cargar(); chan.cargar();
 }
